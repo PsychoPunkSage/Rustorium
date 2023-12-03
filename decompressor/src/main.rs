@@ -89,7 +89,7 @@ fn logic() -> i32 {
             io::copy(&mut file, &mut out_file).unwrap();
         }
 
-        // Get and Set permissions for the extracted files
+        // Get and Set permissions for the extracted files: only for unix based systems.
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
