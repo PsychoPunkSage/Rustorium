@@ -23,10 +23,12 @@ fn main() -> Result<()> {
         eprintln!("Usage: {} <fileLocation>", args[0]);
     };
 
+    /* blocking: For applications wishing to only make a few HTTP requests */
     let mut res = reqwest::blocking::get("http://httpbin.org/get")?;
     println!("Response: \n{:?}", res);
     
     let mut body = String::new();
+    // read_to_string: reads the entire response (HTTP request) body and attempts to convert it into a String object.
     res.read_to_string(&mut body)?;
 
     match create_json_file(args[1].as_str(), &body) {
