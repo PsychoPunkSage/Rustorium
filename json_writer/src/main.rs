@@ -21,6 +21,12 @@ fn create_json_file(path: &str, content: String) -> Result<(), std::io::Error> {
 }
 
 fn main() {
+    let args: Vec<_> = std::env::args().collect();
+
+    if args.len() < 2 {
+        eprintln!("Usage {} <filename>", args[0])
+    }
+
     let article = Article {
         article: String::from("Struct to JSON write"),
         author: String::from("PsychoPunkSage"),
@@ -37,11 +43,11 @@ fn main() {
         ],
     };
 
-    // ----Main----\\
+    // ----Main---- \\
     let json = serde_json::to_string(&article).unwrap();
     println!("_______\n|JSON:|\n-------\n {}", json);
 
-    match create_json_file("./test.json", json) {
+    match create_json_file(args[1].as_str(), json) {
         Ok(_) => println!("Successfully created"),
         Err(error) => println!("Error: {}", error),
     };
