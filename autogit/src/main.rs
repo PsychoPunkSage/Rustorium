@@ -3,8 +3,22 @@ use std::process::{exit, Command};
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} <Commit_Message>", args[0]);
+        eprintln!("Usage: {} <Commit_Message> <branchName?>", args[0]);
     };
+
+    // git checkout -b "NAME"
+    if args.len() > 2 {
+        let checkout_branch = Command::new("git")
+            .arg("checkout")
+            .arg("-b")
+            .arg(args[2].to_string())
+            .output()
+            .expect("ISSUE:: Branch issue");
+        if !checkout_branch.status.success() {
+            eprintln!("Error: Failed to make branch <git checkout -b>");
+            exit(1);
+        }
+    }
 
     // git add .
     let add_command = Command::new("git")
@@ -17,6 +31,7 @@ fn main() {
         eprintln!("Error: Failed to add files <git add>");
         exit(1);
     }
+
 
     // git commit -m "....."
     let commit_command = Command::new("git")
