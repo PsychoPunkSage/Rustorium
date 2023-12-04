@@ -26,7 +26,7 @@ impl fmt::Display for User {
     }
 }
 
-// We have content in form of ""Vector""
+// We have content in form of <<Vector>>
 fn create_json_file(path: &str, content: Vec<User>) -> Result<()> {
 
     let file = File::create(path)?;
