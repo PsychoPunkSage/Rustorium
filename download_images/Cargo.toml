@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# Asycn await req
+tokio = {version = "1.34", features = ["full"]}
+# temp folder
+tempfile = "3.3.0"
+error-chain = "0.12.4"
+reqwest = "0.11.12"
