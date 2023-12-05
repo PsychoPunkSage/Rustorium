@@ -1,12 +1,12 @@
 [package]
-name = "Vault"
+name = "vault"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# << serialization library that supports multiple data formats, including JSON, XML, and YAML.
+# provides serialization and deserialization support for <<JSON data>>.
 serde_json = "1.0"
-# provides serialization and deserialization support for JSON data.
+# serialization library that supports multiple data formats, including <<JSON, XML, and YAML>>.
 serde = { version = "1.0", features = ["derive"]}

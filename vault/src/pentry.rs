@@ -13,49 +13,56 @@ pub struct ServiceInfo {
 }
 impl ServiceInfo {
     pub fn new(service: String, username: String, password: String) -> Self {
+        // Create new ServiceInfo obj.
         ServiceInfo {
             service,
             username,
             password,
         }
     }
+
     pub fn from_json(json_string: &str) -> Result<Self, serde_json::Error> {
-        serde_json::from_str(json_string)
+        // Deserializes: JSON string -> Rust DS
+        serde_json::from_str(json_string) 
     }
+
+    pub fn to_json(&self) -> String {
+        // Serializes: Rust DS -> JSON string.
+        serde_json::to_string(&self).expect("Failed to serialize to JSON")
+    }
+
     #[allow(dead_code)]
     pub fn from_user_input() -> Self {
         println!("Enter Password Entry:");
         let mut service = String::new();
+        /* stdin(): standard input stream */
         io::stdin()
             .read_line(&mut service)
-            .expect("Failed to read line");
+            .expect("Failed to read line"); // read Input
 
         println!("Enter Username:");
         let mut username = String::new();
         io::stdin()
             .read_line(&mut username)
-            .expect("Failed to read line");
+            .expect("Failed to read line"); // read Input
 
         println!("Enter Password:");
         let mut password = String::new();
         io::stdin()
             .read_line(&mut password)
-            .expect("Failed to read line");
+            .expect("Failed to read line"); // read Input
 
         ServiceInfo::new(
-            service.trim().to_string(),
+            service.trim().to_string(), // <<trim()>> method removes any leading and trailing whitespace from the string
             username.trim().to_string(),
             password.trim().to_string(),
         )
     }
 
-    fn to_json(&self) -> String {
-        serde_json::to_string(&self).expect("Failed to serialize to JSON")
-    }
-
     pub fn write_to_file(&self) {
         let json_output = format!("{}\n", self.to_json());
 
+        // <<OpenOptions>> interface for configuring how a file should be opened.
         match OpenOptions::new()
             .create(true)
             .append(true)
@@ -73,10 +80,14 @@ impl ServiceInfo {
     }
 }
 
-pub fn read_passwords_from_file() -> Result<Vec<ServiceInfo>, io::Error> {
+pub fn read_pass_from_file() -> Result<Vec<ServiceInfo>, io::Error> {
+    //  1. Open the File
     let file = File::open("passwords.json")?;
+
+    //  2. Read the file
     let reader = io::BufReader::new(file);
 
+    // 3. Create the Service Vec
     let mut services = Vec::new();
 
     for line in reader.lines() {
@@ -95,7 +106,8 @@ pub fn prompt(prompt: &str) -> String {
     io::stdout().flush().unwrap();
 
     let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
+    io::stdin().read_line(&mut input).unwrap(); // read/accept input
 
     input.trim().to_string()
 }
+

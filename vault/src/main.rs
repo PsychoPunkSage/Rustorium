@@ -1,5 +1,4 @@
 mod pentry;
-
 use crate::pentry::prompt;
 use crate::pentry::read_pass_from_file;
 use crate::pentry::ServiceInfo;
@@ -44,11 +43,8 @@ fn main() {
         match choice.trim() {
             "1" => {
                 clr();
-                let entry = ServiceInfo::new(
-                    prompt("Service:"),
-                    prompt("Username:"),
-                    prompt("Password:"),
-                );
+                let entry =
+                    ServiceInfo::new(prompt("Service:"), prompt("Username:"), prompt("Password:"));
 
                 println!("Entry added successfully");
                 entry.write_to_file();
@@ -58,14 +54,13 @@ fn main() {
                 clr();
                 let services = read_pass_from_file().unwrap_or_else(|err| {
                     eprintln!("ERROR <Reading Pass>: \n{}", err);
-                    Vec::new();
+                    Vec::new()
                 });
                 for item in &services {
                     println!(
-                        "
-                    Service - {}
-                        |_> Username: {}
-                        |_> Password: {}
+                        "Service - {}
+    |_> Username: {}
+    |_> Password: {}
                     ",
                         item.service, item.username, item.password
                     );
@@ -76,26 +71,37 @@ fn main() {
                 clr();
                 let service = read_pass_from_file().unwrap_or_else(|err| {
                     eprintln!("ERROR <NO such service>: \n{}", err);
-                    Vec::new();
+                    Vec::new()
                 });
+
+                let mut entries: Vec<ServiceInfo> = Vec::new();
                 let search = prompt("Search :");
                 for item in &service {
                     if item.service.as_str() == search.as_str() {
-                        println!(
-                            "
-                        Service - {}
-                            |_> Username: {}
-                            |_> Password: {}
-                        ",
-                            item.service, item.usename, item.password
-                        );
+                        entries.push(ServiceInfo::new(
+                            item.service.to_string(),
+                            item.username.to_string(),
+                            item.password.to_string(),
+                        ));
                     }
+                }
+
+                if entries.is_empty() {
+                    println!("`{}` NOT Found", search);
+                } else {
+                    println!(
+                        "Service - {}
+    |_> Username: {}
+    |_> Password: {}
+                    ",
+                        entries[0].service, entries[0].username, entries[0].password
+                    )
                 }
             }
 
             "4" => {
                 clr();
-                let bye =  r#"
+                let bye = r#"
                  __  /\   /\  __       _________                                                    __  /\   /\  __   
                 / / /  \ /  \ \ \     /   _____/____  ___.__. ____   ____ _____ ____________       / / /  \ /  \ \ \  
                / /  \/\/ \/\/  \ \    \_____  \\__  \<   |  |/  _ \ /    \\__  \\_  __ \__  \     / /  \/\/ \/\/  \ \ 
@@ -104,6 +110,7 @@ fn main() {
                                              \/     \/\/                \/     \/           \/                        
                 "#;
                 println!("{bye}");
+                break;
             }
 
             _ => {
