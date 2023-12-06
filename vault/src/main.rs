@@ -1,13 +1,17 @@
+mod db;
 mod pentry;
-use crate::pentry::prompt;
-use crate::pentry::read_pass_from_file;
-use crate::pentry::ServiceInfo;
+// use crate::pentry::prompt;
+// use crate::pentry::read_pass_from_file;
+// use crate::pentry::ServiceInfo;
+use db::*;
 
 fn clr() {
     print!("{}[2J", 27 as char);
 }
 
 fn main() {
+    // Connect to DB
+    let conn = init_database().expect("Failed to initialize DB.");
     clr();
     let ascii = r#"
      __      __       .__                                         __________                    .__          __________              __     _________                         __   /\    /\   __   
@@ -41,21 +45,35 @@ fn main() {
         std::io::stdin().read_line(&mut choice).unwrap(); // Read User Choice.. <from commandline>
 
         match choice.trim() {
+            // I I add Space by mistake -> It will simply Ignore it.
             "1" => {
                 clr();
                 let entry =
                     ServiceInfo::new(prompt("Service:"), prompt("Username:"), prompt("Password:"));
 
+                    write_password_to_db(
+                        &conn,
+                        &entry.service,
+                        &entry.username,
+                        &entry.password,
+                    )
+                    .expect("Failed to write to the database");               
                 println!("Entry added successfully");
-                entry.write_to_file();
+                // entry.write_to_file();
             }
 
             "2" => {
                 clr();
-                let services = read_pass_from_file().unwrap_or_else(|err| {
-                    eprintln!("ERROR <Reading Pass>: \n{}", err);
+
+                let services = read_passwords_from_db(&conn).unwrap_or_else(|error| {
+                    eprintln!("Failed to read password: \n{}", error);
                     Vec::new()
                 });
+
+                // let services = read_pass_from_file().unwrap_or_else(|err| {
+                //     eprintln!("ERROR <Reading Pass>: \n{}", err);
+                //     Vec::new()
+                // });
                 for item in &services {
                     println!(
                         "Service - {}
@@ -69,33 +87,51 @@ fn main() {
 
             "3" => {
                 clr();
-                let service = read_pass_from_file().unwrap_or_else(|err| {
-                    eprintln!("ERROR <NO such service>: \n{}", err);
-                    Vec::new()
-                });
+    //             let service = read_pass_from_file().unwrap_or_else(|err| {
+    //                 eprintln!("ERROR <NO such service>: \n{}", err);
+    //                 Vec::new()
+    //             });
 
-                let mut entries: Vec<ServiceInfo> = Vec::new();
-                let search = prompt("Search :");
-                for item in &service {
-                    if item.service.as_str() == search.as_str() {
-                        entries.push(ServiceInfo::new(
-                            item.service.to_string(),
-                            item.username.to_string(),
-                            item.password.to_string(),
-                        ));
+    //             let mut entries: Vec<ServiceInfo> = Vec::new();
+    //             let search = prompt("Search :");
+    //             for item in &service {
+    //                 if item.service.as_str() == search.as_str() {
+    //                     entries.push(ServiceInfo::new(
+    //                         item.service.to_string(),
+    //                         item.username.to_string(),
+    //                         item.password.to_string(),
+    //                     ));
+    //                 }
+    //             }
+
+    //             if entries.is_empty() {
+    //                 println!("`{}` NOT Found", search);
+    //             } else {
+    //                 println!(
+    //                     "Service - {}
+    // |_> Username: {}
+    // |_> Password: {}
+    //                 ",
+    //                     entries[0].service, entries[0].username, entries[0].password
+    //                 )
+    //             }
+
+                let search = prompt("Search by service name:");
+                match search_service_by_name(&conn, &search) {
+                    Ok(Some(entry)) => {
+                        println!(
+                            "Service = {}
+    |_> Username : {} 
+    |_> Password : {:?}",
+                            entry.service, entry.username, entry.password
+                        );
                     }
-                }
-
-                if entries.is_empty() {
-                    println!("`{}` NOT Found", search);
-                } else {
-                    println!(
-                        "Service - {}
-    |_> Username: {}
-    |_> Password: {}
-                    ",
-                        entries[0].service, entries[0].username, entries[0].password
-                    )
+                    Ok(None) => {
+                        println!("Service not found.");
+                    }
+                    Err(err) => {
+                        eprintln!("Error searching for service: {}", err);
+                    }
                 }
             }
 

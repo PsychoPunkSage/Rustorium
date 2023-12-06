@@ -10,3 +10,5 @@ edition = "2021"
 serde_json = "1.0"
 # serialization library that supports multiple data formats, including <<JSON, XML, and YAML>>.
 serde = { version = "1.0", features = ["derive"]}
+# SOLite
+rusqlite = { version = "0.30" }

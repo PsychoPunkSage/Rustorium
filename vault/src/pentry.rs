@@ -103,7 +103,7 @@ pub fn read_pass_from_file() -> Result<Vec<ServiceInfo>, io::Error> {
 
 pub fn prompt(prompt: &str) -> String {
     print!("{}", prompt);
-    io::stdout().flush().unwrap();
+    io::stdout().flush().unwrap(); // orces any buffered output to be written to the console immediately. This ensures that the prompt is displayed before the program waits for input.
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap(); // read/accept input
