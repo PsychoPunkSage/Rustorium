@@ -27,7 +27,7 @@ fn main() {
             .output()
             .expect("ISSUE:: Branch issue");
         if !checkout_branch.status.success() {
-            eprintln!("Error: Failed to make branch <git checkout -b>");
+            eprintln!("Error: Failed to make branch <git checkout -b '{}'>", args[3].to_string());
             exit(1);
         } else {
             println!("<<git checkout -b {}>> :: Successful", args[3].to_string());
@@ -42,7 +42,7 @@ fn main() {
         .expect("ISSUE:: git add");
 
     if !add_command.status.success() {
-        eprintln!("Error: Failed to add files <git add>");
+        eprintln!("Error: Failed to add files <git add .>");
         exit(1);
     } else {
         println!("<<git add .>> :: Successful");
@@ -57,7 +57,7 @@ fn main() {
         .output()
         .expect("ISSUE:: git commit");
     if !commit_command.status.success() {
-        eprintln!("Error: Failed to commit changes <git commit -m>");
+        eprintln!("Error: Failed to commit changes <git commit -m '{}'>", args[1].to_string());
         exit(1);
     } else {
         println!("<<git commit -m {}>> :: Successful", args[1].to_string());
@@ -72,7 +72,7 @@ fn main() {
         .output()
         .expect("ISSUE:: git push");
     if !push_command.status.success() {
-        eprintln!("Error: Failed to push changes <git push origin main");
+        eprintln!("Error: Failed to push changes = <git push origin {}>", args[2].to_string());
         exit(1);
     } else {
         println!("<<git push origin {}>> :: Successful", args[2].to_string());
