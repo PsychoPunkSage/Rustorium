@@ -1,22 +1,36 @@
-use std::process::{exit, Command};
+use std::{process::{exit, Command}, io::{self, Write}};
+
+fn prompt(prompt: &str) -> String {
+    print!("{} ", prompt);
+    io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+
+    input.trim().to_string()
+}
+
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} <Commit_Message> <branchName?>", args[0]);
+        eprintln!("Usage: {} <Commit_Message> <branchToBePushedOn!> <branchName?>", args[0]);
     };
 
+    
     // git checkout -b "NAME"
-    if args.len() > 2 {
+    if args.len() > 3 {
         let checkout_branch = Command::new("git")
             .arg("checkout")
             .arg("-b")
-            .arg(args[2].to_string())
+            .arg(args[3].to_string())
             .output()
             .expect("ISSUE:: Branch issue");
         if !checkout_branch.status.success() {
             eprintln!("Error: Failed to make branch <git checkout -b>");
             exit(1);
+        } else {
+            println!("<<git checkout -b {}>> :: Successful", args[3].to_string());
         }
     }
 
@@ -30,6 +44,8 @@ fn main() {
     if !add_command.status.success() {
         eprintln!("Error: Failed to add files <git add>");
         exit(1);
+    } else {
+        println!("<<git add .>> :: Successful");
     }
 
 
@@ -43,18 +59,23 @@ fn main() {
     if !commit_command.status.success() {
         eprintln!("Error: Failed to commit changes <git commit -m>");
         exit(1);
+    } else {
+        println!("<<git commit -m {}>> :: Successful", args[1].to_string());
     }
+
 
     // git push origin main
     let push_command = Command::new("git")
         .arg("push")
         .arg("origin")
-        .arg("main")
+        .arg(args[2].to_string())
         .output()
         .expect("ISSUE:: git push");
     if !push_command.status.success() {
         eprintln!("Error: Failed to push changes <git push origin main");
         exit(1);
+    } else {
+        println!("<<git push origin {}>> :: Successful", args[2].to_string());
     }
 
     println!("SUCCESS:: Added + Commited + Pushed");
