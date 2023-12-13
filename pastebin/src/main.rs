@@ -8,7 +8,7 @@ use rusqlite::{params, Connection};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 // To work with db
-use std::sync::Mutex;
+use std::sync::Mutex; // allows only 1 thread (at a time) to access db
 
 use serde::{Serialize, Deserialize};
 
@@ -26,6 +26,9 @@ struct AppState {
 ///////////
 async fn index() -> impl Responder {
     HttpResponse::Ok().body(include_str!("index.html"))
+    /* <<.body()>> This sets the response body to the contents of the file "index.html" using the include_str! macro */
+    /* <<include_str!>> reads the entire contents of the specified file and includes it directly into the code as a string literal */
+
 }
 
 
@@ -43,7 +46,7 @@ async fn submit(content: web::Form<FormData>, data: web::Data<AppState>) -> impl
     )
     .expect("Failed to insert to DB");
 
-HttpResponse::SeeOther().append_header(("Location", format!("paste/{}", token))).finish()
+    HttpResponse::SeeOther().append_header(("Location", format!("paste/{}", token))).finish()
 }
 
 ///////////////
@@ -66,7 +69,7 @@ async fn get_paste(token: web::Path<String>, data: web::Data<AppState>) -> impl 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Establish Connection with DB...
-    let db = Connection::open("pastebin.db").expect("Failed) to open pastebin database");
+    let db = Connection::open("pastebin.db").expect("Failed to open pastebin database");
 
     // SQL command to create table if it doesn't EXISTS
     db.execute(
@@ -79,7 +82,7 @@ async fn main() -> std::io::Result<()> {
 
     // Creating HttpServer
     HttpServer::new(move || { /* <<HttpServer>> responsible for handling incoming HTTP requests and routing them to the appropriate application code. */
-                                      /* <<move>> keyword tells the compiler to capture the values of any variables referenced inside the closure */
+                              /* <<move>> keyword tells the compiler to capture the values of any variables referenced inside the closure */
         /* <<App>> type defines the structure of the application and contains information about the routes, middleware, and application state. */
         App::new() 
             .app_data(app_state.clone())
