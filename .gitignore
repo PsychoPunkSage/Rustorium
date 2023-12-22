@@ -6,3 +6,4 @@ tester.json
 tester.txt
 passwords.json
 passwords.db
+.env
