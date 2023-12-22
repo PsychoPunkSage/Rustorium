@@ -31,12 +31,14 @@ pub struct User {
 }
 
 #[derive(Deserialize)]
+// Since, Login is checked using Rust, So, the JSOn formant must be Deserialized 
 pub struct LoginRequest {
     pub email: String,
     pub pw: String,
 }
 
 #[derive(Serialize)]
+// Our backend is sending Response. So, it must be serialized.
 pub struct LoginResponse {
     pub token: String,
 }
