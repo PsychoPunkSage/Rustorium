@@ -36,13 +36,13 @@ fn main() -> Result<()> {
     println!("Response: {:?}", response);
 
     let mut body = String::new();
-    // read_to_string: reads the entire response (HTTP request) body and attempts to convert it into a String object.
+    // read_to_string: reads the entire response (HTTP request) body and attempts to convert it into a String object
     response.read_to_string(&mut body)?;
 
     match create_json_file(args[1].as_str(), body) {
         Ok(_) => println!("File Created"),
         Err(e) => println!("Error {:?}", e),
     }
-    
+
     Ok(())
 }
