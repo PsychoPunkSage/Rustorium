@@ -56,4 +56,16 @@ fn main() {
             break counter * 2;
         }
     };
+
+    //  Types of loop::> while || For
+    let mut cont = 3;
+    while cont != 0 {
+        cont -= 1;
+        println!("{}", cont);
+    }
+
+    let a = [10, 20, 30, 40, 50];
+    for ele in a.iter() {
+        println!("Val {}", ele);
+    }
 }
