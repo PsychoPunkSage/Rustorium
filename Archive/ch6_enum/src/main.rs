@@ -33,6 +33,41 @@ impl Message {
     }
 }
 
+#[derive(Debug)]
+enum UsState {
+    Alabama,
+    Alaska,
+    Arizona,
+    Arkansas,
+    Colorado,
+    Connecticut,
+    Delaware,
+    Florida,
+}
+enum Coin {
+    Penny,
+    Nickle,
+    Dime,
+    Quarter(UsState),
+}
+
+impl Coin {
+    fn value_in_cents(&self) -> u8 {
+        match self {
+            Coin::Penny => {
+                println!("Lucky Penny");
+                1
+            }
+            Coin::Nickle => 5,
+            Coin::Dime => 10,
+            Coin::Quarter(state) => {
+                println!("State: {:?}", state);
+                25
+            }
+        }
+    }
+}
+
 fn main() {
     let four = IpAddrKind::V4; // Enums are namespaced under its identifier
     let six = IpAddrKind::V6;
@@ -61,4 +96,10 @@ fn main() {
     // let y = Some(10);
     let y = None;
     println!("{:#?}", x + y.unwrap_or(2));
+
+    // MATCH Patterns
+    let one_penny = Coin::Penny;
+    let quarter = Coin::Quarter(UsState::Florida);
+    println!("{:#?}", one_penny.value_in_cents());
+    println!("{:?}", quarter.value_in_cents());
 }
