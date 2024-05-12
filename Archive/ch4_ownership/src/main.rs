@@ -15,7 +15,7 @@ fn main() {
 
     // Change the value of Reference - USE mutable reference.
     //                               - ONLY 1 mutable reference in SCOPE.
-    //                               - Can't have mutable reference if mutable reference EXISTS. <But we can define Immutable Ref if Mutable_ref is out off scope>
+    //                               - Can't have mutable reference if immutable reference EXISTS. <But we can define mutable Ref if Immutable_ref is out off scope>
 
     let mut s1 = String::from("Hello");
     change(&mut s1);
@@ -23,7 +23,7 @@ fn main() {
 
     /*
     ------------------Reference RULES ------------------
-    1. At one time::> 1 mutable_ref OOOR inf immutable_ref
+    1. At one time::> 1 mutable_ref OOOR inf. immutable_ref
     2. Reference must always be VALID.
      */
 
@@ -63,10 +63,12 @@ fn first_word(s: &String) -> usize {
 
 fn first_word_modified(s: &String) -> &str {
     let b = s.as_bytes(); // convert to array of bytes
+    println!("b (bytes) = {:?}", b);
 
     for (i, &item) in b.iter().enumerate() {
         // Check for spaces
         if item == b' ' {
+            println!("{:?}", item);
             return &s[..i]; // return value is not tied to string itself
         }
     }
