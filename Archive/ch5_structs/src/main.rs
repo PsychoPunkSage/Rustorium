@@ -6,9 +6,30 @@ struct User {
     active: bool,
 }
 
+#[derive(Debug)]
 struct Rectangle {
     width: u32,
     height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    fn can_hold(&self, other_rect: &Rectangle) -> bool {
+        self.height > other_rect.height && self.width > other_rect.width
+    }
+}
+
+// Associated Function
+impl Rectangle {
+    fn square(size: u32) -> Rectangle {
+        Rectangle {
+            width: size,
+            height: size,
+        }
+    }
 }
 
 fn main() {
@@ -31,7 +52,7 @@ fn main() {
     user1.username = String::from("AP");
 
     let user2 = make_user(String::from("APPA"), String::from("ap@ap.com"));
-    println!("{:?}", user2);
+    println!("{:#?}", user2);
 
     // Importing data from other user
     let user3 = User {
@@ -47,7 +68,16 @@ fn main() {
         width: 30,
         height: 50,
     };
-    println!("Area: {} px", find_area_of_rect(rect));
+    let rect2 = Rectangle {
+        width: 300,
+        height: 5,
+    };
+    let square1 = Rectangle::square(32);
+
+    println!("Square::> {:#?}", square1);
+    println!("Area: {} px <independent fn>", find_area_of_rect(&rect));
+    println!("Area: {} px <Impl>", rect.area());
+    println!("Can Hold: {}", rect.can_hold(&rect2));
 }
 
 fn make_user(username: String, email: String) -> User {
@@ -59,6 +89,6 @@ fn make_user(username: String, email: String) -> User {
     }
 }
 
-fn find_area_of_rect(dimensions: Rectangle) -> u32 {
+fn find_area_of_rect(dimensions: &Rectangle) -> u32 {
     dimensions.height * dimensions.width
 }
