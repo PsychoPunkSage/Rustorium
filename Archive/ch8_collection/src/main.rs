@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
 fn main() {
@@ -96,4 +97,28 @@ fn main() {
     for g in "नमस्ते".graphemes(false) {
         println!("{}", g)
     }
+
+    // HASHMAP
+    let t_b = String::from("blue");
+    let t_y = String::from("yellow");
+
+    let mut scores = HashMap::new();
+
+    scores.insert(t_b, 10); // Ownership of blue String moved to Hashmap
+    scores.insert(t_y, 23);
+
+    scores.entry(String::from("green")).or_insert(30); // If `green` DNE then insert it with default value of `30` ELSE do nothing.
+
+    // retrieve values
+    println!("{:?}", scores);
+    println!("Score of Blue Team: {}", scores.get("blue").unwrap()); // Used unwrap to extract i32 from `Options`.
+
+    let text = "No one can beat GOKU. No one";
+    let mut n_hash = HashMap::new();
+
+    for word in text.split_whitespace() {
+        let w_count = n_hash.entry(word).or_insert(0);
+        *w_count += 1;
+    }
+    println!("map {:?}", n_hash);
 }
