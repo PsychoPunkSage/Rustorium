@@ -1,3 +1,5 @@
+use unicode_segmentation::UnicodeSegmentation;
+
 fn main() {
     let a = [1, 2, 3, 4, 5, 6];
     let mut v: Vec<i32> = Vec::new();
@@ -32,5 +34,66 @@ fn main() {
     for (k, l) in a.iter().enumerate() {
         // k -> index || l -> element reference
         println!("{} {}", k, l);
+    }
+
+    // ENUM in Vectors
+    #[derive(Debug)]
+    enum Spreadsheet {
+        Int(i32),
+        Float(f64),
+        Text(String),
+    }
+
+    let row = vec![
+        Spreadsheet::Int(1),
+        Spreadsheet::Float(12.45),
+        Spreadsheet::Text(String::from("Mock")),
+    ];
+
+    println!("{:#?}", row);
+
+    // Check
+    match &row[1] {
+        Spreadsheet::Int(_) => println!("Its an integer"),
+        _ => println!("Not an integer"),
+    }
+
+    // String Treatment::> Very complex for Low-level programming
+    /*
+    Rust Uses UTF-8 encoding ::> Any character is represented in 1/2/3/4 bytes <Unlike ASCII for which 1 Char = 1 Byte>
+     */
+
+    let mut s = String::from("foo");
+    s.push_str("bar"); // taking in `string reference`
+    s.push('!');
+
+    let st1 = String::from("Hello ");
+    let st2 = String::from("AP");
+    let st4 = format!("{}{}", st1, st2);
+    let st3 = st1 + &st2; // Owner of `st1`
+    println!("{} || {}", st3, st4);
+
+    // Unicode Parsing of `String` literals
+    /*
+    “नमस्ते”
+    -> u8 = [224, 164, 168, 224, 164, 174, 224, 164, 184, 224, 165, 141, 224, 164, 164, 224, 165, 135]
+    -> Scalar Values = ['न', 'म', 'स', '्', 'त', 'े']
+    -> Graphene clusters = ["न", "म", "स्", "ते"] // We can't do this type of parsing in RUST. Need to use `unicode-segmentation` crate.
+    */
+
+    let hello = String::from("नमस्ते");
+    // for u8
+    for b in "नमस्ते".bytes() {
+        println!("{}", b)
+    }
+
+    // for Scalar
+    for c in "नमस्ते".chars() {
+        println!("{}", c)
+    }
+
+    // for Graphemes
+    for g in "नमस्ते".graphemes(false) {
+        println!("{}", g)
     }
 }
