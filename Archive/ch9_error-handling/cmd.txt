@@ -1,0 +1,3 @@
+$ RUST_BACKTRACE=1 cargo r
+
+> To get a proper backtrace.
