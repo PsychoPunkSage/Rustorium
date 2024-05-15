@@ -50,7 +50,7 @@ pub fn notify<T, U>(item1: &T, item2: &U) -> f64
 where T: Display + Clone,
 U: Clone + Debug
 {
-
+    ......
 }
 */
 
