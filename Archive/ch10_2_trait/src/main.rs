@@ -1,4 +1,7 @@
+use std::fmt::format;
+
 pub trait Summary {
+    fn summarize_author(&self) -> String;
     fn summarize(&self) -> String {
         format!("Read More........")
     }
@@ -10,8 +13,9 @@ pub struct NewArticle {
 }
 
 impl Summary for NewArticle {
-    fn summarize(&self) -> String {
-        format!("{}, by {}", self.headline, self.author)
+    fn summarize_author(&self) -> String {
+        // format!("{}, by {}", self.headline, self.author)
+        format!("@{}", self.author)
     }
 }
 pub struct Tweet {
@@ -22,6 +26,9 @@ pub struct Tweet {
 }
 
 impl Summary for Tweet {
+    fn summarize_author(&self) -> String {
+        format!("@{}", self.username)
+    }
     fn summarize(&self) -> String {
         format!("{}, by {}", self.content, self.username)
     }
