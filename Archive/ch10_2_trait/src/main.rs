@@ -34,6 +34,13 @@ impl Summary for Tweet {
     }
 }
 
+// TRAITS as Parameters
+// fn notify<T: Summary>(item: &T) {
+fn notify(item: &impl Summary) {
+    // Reference to something that implements Summary.
+    println!("Breaking News!! read more from {}", item.summarize_author());
+}
+
 fn main() {
     let tweet = Tweet {
         username: String::from("horse_ebooks"),
@@ -51,4 +58,6 @@ fn main() {
     };
 
     println!("1 new article: {}", article.summarize());
+    notify(&article);
+    notify(&tweet);
 }
