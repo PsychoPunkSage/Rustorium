@@ -50,12 +50,15 @@ pub fn notify<T, U>(item1: &T, item2: &U) -> f64
 where T: Display + Clone,
 U: Clone + Debug
 {
-    ......
+
 }
 */
 
 //// TRAITS as Return Value
 fn returns_summarizable() -> impl Summary {
+    /*
+    We can only return one `type`. Like if we are returning a `Tweet` we can't return `Tweet` or vice versa.
+     */
     Tweet {
         username: String::from("horse_ebooks"),
         content: String::from("of course, as you probably already know, people"),
