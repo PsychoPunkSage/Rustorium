@@ -41,6 +41,14 @@ fn notify(item: &impl Summary) {
     println!("Breaking News!! read more from {}", item.summarize_author());
 }
 
+/*
+Examples::>
+
+pub fn notify<T: Summary + Display>(item1: &T, item2: &T) {...}
+pub fn notify(item1: &(impl Summary + Display), item2:  &impl Summary) {...}
+
+*/
+
 fn main() {
     let tweet = Tweet {
         username: String::from("horse_ebooks"),
