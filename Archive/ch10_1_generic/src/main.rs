@@ -1,5 +1,5 @@
 // At runtime RUST will auto-generate / compile Generic for different cases.
-// i.e. Point<i32, i32>, Point<&str, char> Point<f64, f64> Point<f64, i32>
+// i.e. Point<i32, i32>, Point<&str, char> Point<f64, f64> Point<f64, i32> seperately
 struct Point<T, U> {
     X: T,
     Y: U,
