@@ -34,7 +34,7 @@ impl Summary for Tweet {
     }
 }
 
-// TRAITS as Parameters
+//// TRAITS as Parameters
 // fn notify<T: Summary>(item: &T) {
 fn notify(item: &impl Summary) {
     // Reference to something that implements Summary.
@@ -46,8 +46,23 @@ Examples::>
 
 pub fn notify<T: Summary + Display>(item1: &T, item2: &T) {...}
 pub fn notify(item1: &(impl Summary + Display), item2:  &impl Summary) {...}
-
+pub fn notify<T, U>(item1: &T, item2: &U) -> f64
+where T: Display + Clone,
+U: Clone + Debug
+{
+    ......
+}
 */
+
+//// TRAITS as Return Value
+fn returns_summarizable() -> impl Summary {
+    Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from("of course, as you probably already know, people"),
+        reply: false,
+        retweet: false,
+    }
+}
 
 fn main() {
     let tweet = Tweet {
@@ -68,4 +83,11 @@ fn main() {
     println!("1 new article: {}", article.summarize());
     notify(&article);
     notify(&tweet);
+
+    //// TRAITS as Return Value
+    println!(
+        "{} by {}",
+        returns_summarizable().summarize(),
+        returns_summarizable().summarize_author()
+    );
 }
