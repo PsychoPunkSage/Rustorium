@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::fmt::{format, Display};
 
 pub trait Summary {
     fn summarize_author(&self) -> String;
@@ -66,6 +66,35 @@ fn returns_summarizable() -> impl Summary {
         retweet: false,
     }
 }
+
+///////////////
+// Imp. Impl //
+///////////////
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    // Available for all Pair structs.
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
+impl<T: Display + PartialOrd> Pair<T> {
+    // Only available for Pair Structs, where type T implements <<Display+PartialOrd>>
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+
+//// We can also implement Traits on Other Traits
 
 fn main() {
     let tweet = Tweet {
