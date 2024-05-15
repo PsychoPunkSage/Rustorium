@@ -1,5 +1,7 @@
 pub trait Summary {
-    fn summarize(&self) -> String;
+    fn summarize(&self) -> String {
+        format!("Read More........")
+    }
 }
 pub struct NewArticle {
     pub author: String,
