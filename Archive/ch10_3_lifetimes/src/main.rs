@@ -1,3 +1,24 @@
+/*
+RULES of LIFETIME:
+
+-> Each parameter that is a reference gets its own lifetime parameter.
+-> If there is ONLY 1 INPUT lifetime parameter, then that lifetime is assigned to all output lifetime parameters.
+-> If there are multiple input lifetime parameters, BUT one of them is `&self` or `&mut self`, the lifetime of self is assigned to all OUTPUT lifetime parameters.
+
+*/
+
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
+impl<'a> ImportantExcerpt<'a> {
+    fn return_part(&self, announcement: &str) -> &str {
+        // Here, lifetime(return) == lifetime(self) || Rule@3
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+
 fn main() {
     // Ex1
     let string1 = String::from("AP ");
