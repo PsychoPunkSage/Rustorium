@@ -34,6 +34,11 @@ fn main() {
         // lifetime(result) == lifetime(str2)  ||| lifetime(str2) < lifetime(str1)
     }
     println!("Longest string: {}", result);
+
+    // STATIC Lifetime ::> Variables can live as long as the duration of Program. :: get stored in Program BINARY
+    let s: &'static str = "I have a static lifetime";
+    let num: &'static i32 = &10000;
+    // All string literals are BY-DEFAULT `Static`
 }
 
 /*
