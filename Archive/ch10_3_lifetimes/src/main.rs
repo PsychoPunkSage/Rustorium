@@ -7,6 +7,8 @@ RULES of LIFETIME:
 
 */
 
+use std::fmt::Display;
+
 struct ImportantExcerpt<'a> {
     part: &'a str,
 }
@@ -75,4 +77,20 @@ fn dangling_reference() {
 
     r = &10;
     println!("r: {}", r); // r -> Dangling Reference
+}
+
+///////////////////////
+// GRAND FINALE impl //
+///////////////////////
+
+fn longest_with_an_announcement<T, 'a>(x: &'a str, y: &'a str, ann: T) -> &'a str
+where
+    T: Display,
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
 }
