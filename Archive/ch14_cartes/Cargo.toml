@@ -1,0 +1,18 @@
+[package]
+name = "ch14_cartes"
+version = "0.1.0"
+edition = "2021"
+description = "A custom test crate"
+authors = ["PsychoPunkSage"]
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+# Optimisation level: (LEAST optimized) 0----1----2----3 (MOST optimized)
+[profile.dev]
+opt-level = 0 # compile_time: FAST || runtime: SLOW
+
+[profile.release]
+opt-level = 3
