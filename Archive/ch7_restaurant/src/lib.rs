@@ -1,5 +1,5 @@
 /*
-- $ cargo new --lib <name> ::> To create a dir.
+- $ cargo new --lib <name> ::> To create a library.
 */
 
 // Get contents of `func_of_mod_k` from a file called `func_of_mod_k.rs`

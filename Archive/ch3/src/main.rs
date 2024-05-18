@@ -4,7 +4,7 @@ fn main() {
     x = 10;
     println!("x: {}", x);
     let y = 5;
-    let y = 10; // Shadowing
+    let y = "Shadowing"; // Shadowing
     println!("y: {}", y);
 
     const A: u32 = 1_000;

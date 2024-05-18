@@ -3,13 +3,5 @@
 version = 3
 
 [[package]]
-name = "ch12_minigrep"
-version = "0.1.0"
-
-[[package]]
-name = "ch13_1_closures"
-version = "0.1.0"
-
-[[package]]
-name = "ch6_enum"
+name = "ch11_testing_adder"
 version = "0.1.0"

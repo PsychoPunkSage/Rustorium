@@ -1,6 +1,5 @@
-workspace = { members = ["src/ch12_minigrep", "src/ch13_1_closures"] }
 [package]
-name = "ch6_enum"
+name = "ch11_testing_adder"
 version = "0.1.0"
 edition = "2021"
 

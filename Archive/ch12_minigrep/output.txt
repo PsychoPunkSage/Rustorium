@@ -1,0 +1,6 @@
+Searching for 'ARE'
+In file 'poem.txt'
+
+Matching Contents:
+I'm nobody! Who are you?
+Are you nobody, too?

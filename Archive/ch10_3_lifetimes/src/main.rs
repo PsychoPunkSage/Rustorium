@@ -83,7 +83,7 @@ fn dangling_reference() {
 // GRAND FINALE impl //
 ///////////////////////
 
-fn longest_with_an_announcement<T, 'a>(x: &'a str, y: &'a str, ann: T) -> &'a str
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
 where
     T: Display,
 {
