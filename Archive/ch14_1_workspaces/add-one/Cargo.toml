@@ -1,0 +1,10 @@
+[package]
+name = "add-one"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Only 1 version of the crate will be downloaded in `Cargo.lock` file
+rand = "0.8.0"
