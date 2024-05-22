@@ -5,7 +5,7 @@ struct SelectBox {
     height: u32,
     options: Vec<String>,
 }
-
+// implements `Draw`
 impl Draw for SelectBox {
     fn draw(&self) {
         println!("Select obj DONE")
@@ -15,6 +15,8 @@ impl Draw for SelectBox {
 fn main() {
     let screen = Screen {
         components: vec![
+            // Any DS that implements `Draw`
+            // Box::new(String::from("Hi")) ==> Doesn't implement `Draw`
             Box::new(SelectBox {
                 width: 10,
                 height: 13,
