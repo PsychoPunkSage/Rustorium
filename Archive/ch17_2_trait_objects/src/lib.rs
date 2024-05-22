@@ -3,6 +3,7 @@ pub trait Draw {
 }
 
 pub struct Screen {
+    // Sores any DS that implements `Draw` trait.
     pub components: Vec<Box<dyn Draw>>,
 }
 
@@ -19,7 +20,7 @@ pub struct Button {
     pub height: u32,
     pub label: String,
 }
-
+// Button implements DRAW...
 impl Draw for Button {
     fn draw(&self) {
         println!("Drawing")
