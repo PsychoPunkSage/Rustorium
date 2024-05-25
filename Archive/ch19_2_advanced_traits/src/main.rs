@@ -132,6 +132,7 @@ impl fmt::Display for Point {
 struct Wrapper(Vec<String>);
 
 impl fmt::Display for Wrapper {
+    // If we want to implement a trait (eg fmt::Display) on elements inherited from a diff Crate...
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[{}]", self.0.join(", "))
     }
