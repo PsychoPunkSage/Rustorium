@@ -69,42 +69,42 @@ impl Add<M> for MM {
 }
 
 // =================================================================================================
-// trait Pilot {
-//     fn fly(&self);
-//     fn walk();
-// }
-// trait Wizard {
-//     fn fly(&self);
-//     fn walk();
-// }
-// struct Human;
+trait Pilot {
+    fn fly(&self);
+    fn walk();
+}
+trait Wizard {
+    fn fly(&self);
+    fn walk();
+}
+struct Human;
 
-// impl Human {
-//     fn fly(&self) {
-//         println!("**Waving hands furiously**")
-//     }
-//     fn walk() {
-//         println!("I'm walking");
-//     }
-// }
+impl Human {
+    fn fly(&self) {
+        println!("**Waving hands furiously**")
+    }
+    fn walk() {
+        println!("I'm walking");
+    }
+}
 
-// impl Pilot for Human {
-//     fn fly(&self) {
-//         println!("This is your Captain AP speaking")
-//     }
-//     fn walk() {
-//         println!("On track")
-//     }
-// }
+impl Pilot for Human {
+    fn fly(&self) {
+        println!("This is your Captain AP speaking")
+    }
+    fn walk() {
+        println!("On track")
+    }
+}
 
-// impl Wizard for Human {
-//     fn fly(&self) {
-//         println!("Up!!!")
-//     }
-//     fn walk() {
-//         println!("Buzz off")
-//     }
-// }
+impl Wizard for Human {
+    fn fly(&self) {
+        println!("Up!!!")
+    }
+    fn walk() {
+        println!("Buzz off")
+    }
+}
 
 // =================================================================================================
 // use std::fmt;
@@ -142,14 +142,14 @@ fn main() {
         Point { x: 3, y: 12 }
     );
     // --------------------------------------------------------------
-    // let person = Human;
-    // Pilot::fly(&person);
-    // Wizard::fly(&person);
-    // person.fly();
+    let person = Human;
+    Pilot::fly(&person);
+    Wizard::fly(&person);
+    person.fly();
 
-    // Human::walk(); // Associated fn of HUMAN will be called
-    // <Human as Wizard>::walk();
-    // <Human as Pilot>::walk();
+    Human::walk(); // Associated fn of HUMAN will be called
+    <Human as Wizard>::walk();
+    <Human as Pilot>::walk();
 
     // --------------------------------------------------------------
     // let p = Point { x: 1, y: 2 };
