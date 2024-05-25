@@ -129,13 +129,13 @@ impl fmt::Display for Point {
 }
 
 // // =================================================================================================
-// struct Wrapper(Vec<String>);
+struct Wrapper(Vec<String>);
 
-// impl fmt::Display for Wrapper {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "[{}]", self.0.join(", "))
-//     }
-// }
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
 fn main() {
     assert_eq!(
         Point { x: 1, y: 8 } + Point { x: 2, y: 4 },
@@ -156,6 +156,6 @@ fn main() {
     p.outline_print();
 
     // --------------------------------------------------------------
-    // let w = Wrapper(vec!["Yo Boys!!".to_string(), " Ap is here :)".to_string()]);
-    // println!("{}", w);
+    let w = Wrapper(vec!["Yo Boys!!".to_string(), " Ap is here :)".to_string()]);
+    println!("{}", w);
 }
