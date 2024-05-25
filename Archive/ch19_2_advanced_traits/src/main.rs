@@ -58,15 +58,15 @@ impl Add for Point {
 }
 
 // =================================================================================================
-// struct MM(u32);
-// struct M(u32);
+struct MM(u32);
+struct M(u32);
 
-// impl Add<M> for MM {
-//     type Output = MM;
-//     fn add(self, rhs: M) -> MM {
-//         MM(self.0 + (rhs.0 * 1000))
-//     }
-// }
+impl Add<M> for MM {
+    type Output = MM;
+    fn add(self, rhs: M) -> MM {
+        MM(self.0 + (rhs.0 * 1000))
+    }
+}
 
 // =================================================================================================
 // trait Pilot {
