@@ -1,0 +1,9 @@
+workspace = { members = ["ch19_6_hello_macro_derive"] }
+[package]
+name = "ch19_6_hello_macro"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
