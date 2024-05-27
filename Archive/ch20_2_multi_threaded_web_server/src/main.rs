@@ -1,6 +1,7 @@
-use std::fs;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
+use std::time::Duration;
+use std::{fs, thread};
 
 fn main() {
     let listener = match TcpListener::bind("127.0.0.1:7878") {
@@ -11,6 +12,8 @@ fn main() {
             return;
         }
     };
+
+    let thread_pool = ThreadPool::new(5);
 
     for stream in listener.incoming() {
         // .incoming() ::> iterator over the connections being received on this listener
@@ -24,9 +27,18 @@ fn main() {
         };
 
         // println!("Connection Established!!\n{:?}", steam);
-        handle_connection(stream);
+        thread_pool.execute(|| {
+            handle_connection(stream);
+        });
     }
 }
+
+/*
+==> Handle multi-request at same time...
+we add new route to simulate slow request
+
+*** We will use `thread pool` to manage specific no. (say 10) of threads to cater multi-requests
+*/
 
 fn handle_connection(mut stream: TcpStream) {
     // Buffer to hold data that is being read.
@@ -36,9 +48,16 @@ fn handle_connection(mut stream: TcpStream) {
         Ok(_) => {
             // Check if the request is for the root path
             let get = b"GET / HTTP/1.1\r\n";
+            let sleep = b"GET /sleep HTTP/1.1\r\n"; // new route
 
             let (status_line, page_name) = if buffer.starts_with(get) {
                 // Serve index.html
+                ("HTTP/1.1 200 OK", "index.html")
+            } else if buffer.starts_with(sleep) {
+                /* Simulation to show
+                    How SLOW requests can hinder fast request in single threaded processes
+                */
+                thread::sleep(Duration::from_secs(10));
                 ("HTTP/1.1 200 OK", "index.html")
             } else {
                 // Serve 404.html
