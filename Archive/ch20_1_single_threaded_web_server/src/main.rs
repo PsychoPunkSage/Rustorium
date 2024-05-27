@@ -34,40 +34,8 @@ fn handle_connection(mut stream: TcpStream) {
 
             if buffer.starts_with(get) {
                 // Serve index.html
-                let web_page = match fs::read_to_string("index.html") {
-                    Ok(string) => string,
-                    Err(e) => {
-                        println!("Could not read from file:\nError{}", e);
-                        return;
-                    }
-                };
-
-                let resp = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-                    web_page.len(),
-                    web_page
-                );
-                stream.write(resp.as_bytes()).unwrap();
-                stream.flush().unwrap();
             } else {
                 // Serve 404.html
-                let error_page = match fs::read_to_string("404.html") {
-                    Ok(string) => string,
-                    Err(e) => {
-                        println!("Could not read from file:\nError{}", e);
-                        return;
-                    }
-                };
-
-                let status_line = "HTTP/1.1 404 NOT FOUND";
-                let resp = format!(
-                    "{}\r\nContent-Length: {}\r\n\r\n{}",
-                    status_line,
-                    error_page.len(),
-                    error_page
-                );
-                stream.write(resp.as_bytes()).unwrap();
-                stream.flush().unwrap();
             }
         }
         Err(e) => {
@@ -75,6 +43,24 @@ fn handle_connection(mut stream: TcpStream) {
             return;
         }
     };
+
+    let content = match fs::read_to_string("404.html") {
+        Ok(string) => string,
+        Err(e) => {
+            println!("Could not read from file:\nError{}", e);
+            return;
+        }
+    };
+
+    let status_line = "HTTP/1.1 404 NOT FOUND";
+    let resp = format!(
+        "{}\r\nContent-Length: {}\r\n\r\n{}",
+        status_line,
+        content.len(),
+        content
+    );
+    stream.write(resp.as_bytes()).unwrap();
+    stream.flush().unwrap();
     /*
     REQUEST Body:
 
