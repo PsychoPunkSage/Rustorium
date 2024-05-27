@@ -5,7 +5,11 @@ use std::net::{TcpListener, TcpStream};
 fn main() {
     let listener = match TcpListener::bind("127.0.0.1:7878") {
         Ok(listener) => listener,
-        Err(e) => panic!("Could not bind to port:\nError{}", e),
+        Err(e) => {
+            println!("Connection refused");
+            println!("Could not bind to port:\nError{}", e);
+            return;
+        }
     };
 
     for stream in listener.incoming() {
@@ -14,7 +18,8 @@ fn main() {
             Ok(st) => st,
             Err(e) => {
                 println!("Connection refused");
-                panic!("Could not accept connection:\nError{}", e)
+                println!("Could not accept connection:\nError{}", e);
+                return;
             }
         };
 
@@ -32,11 +37,29 @@ fn handle_connection(mut stream: TcpStream) {
             // Check if the request is for the root path
             let get = b"GET / HTTP/1.1\r\n";
 
-            if buffer.starts_with(get) {
+            let (status_line, page_name) = if buffer.starts_with(get) {
                 // Serve index.html
+                ("HTTP/1.1 200 OK", "index.html")
             } else {
                 // Serve 404.html
-            }
+                ("HTTP/1.1 404 NOT FOUND", "404.html")
+            };
+
+            let content = match fs::read_to_string(page_name) {
+                Ok(string) => string,
+                Err(e) => {
+                    println!("Could not read from file:\nError{}", e);
+                    return;
+                }
+            };
+            let resp = format!(
+                "{}\r\nContent-Length: {}\r\n\r\n{}",
+                status_line,
+                content.len(),
+                content
+            );
+            stream.write(resp.as_bytes()).unwrap();
+            stream.flush().unwrap();
         }
         Err(e) => {
             println!("Could not read from stream:\nError{}", e);
@@ -44,23 +67,6 @@ fn handle_connection(mut stream: TcpStream) {
         }
     };
 
-    let content = match fs::read_to_string("404.html") {
-        Ok(string) => string,
-        Err(e) => {
-            println!("Could not read from file:\nError{}", e);
-            return;
-        }
-    };
-
-    let status_line = "HTTP/1.1 404 NOT FOUND";
-    let resp = format!(
-        "{}\r\nContent-Length: {}\r\n\r\n{}",
-        status_line,
-        content.len(),
-        content
-    );
-    stream.write(resp.as_bytes()).unwrap();
-    stream.flush().unwrap();
     /*
     REQUEST Body:
 
