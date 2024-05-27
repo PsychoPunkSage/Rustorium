@@ -3,6 +3,8 @@ use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
 use std::{fs, thread};
 
+use ch20_2_multi_threaded_web_server::ThreadPool;
+
 fn main() {
     let listener = match TcpListener::bind("127.0.0.1:7878") {
         Ok(listener) => listener,
