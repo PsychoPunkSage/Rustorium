@@ -75,95 +75,13 @@ fn handle_connection(mut stream: TcpStream) {
             return;
         }
     };
-    // let get = b"GET / HTTP/1.1\r\n";
+    /*
+    REQUEST Body:
 
-    // if buffer.starts_with(get) {
-    //     let _ = match stream.read(&mut buffer) {
-    //         Ok(_) => {
-    //             // println!("Request: {}", String::from_utf8_lossy(&buffer[..]))
-    //             let web_page = match fs::read_to_string("index.html") {
-    //                 Ok(string) => string,
-    //                 Err(e) => {
-    //                     println!("Could not read from file:\nError{}", e);
-    //                     return;
-    //                 }
-    //             };
+    HTTP-Version Status-Code Reason-Phrase CRLF
+    headers CRLF
+    message-body
 
-    //             let resp = format!(
-    //                 "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-    //                 web_page.len(),
-    //                 web_page
-    //             );
-    //             stream.write(resp.as_bytes()).unwrap();
-    //             stream.flush().unwrap();
-    //         }
-    //         Err(e) => {
-    //             println!("Could not read from stream:\nError{}", e);
-    //             return;
-    //         }
-    //     };
-    // } else {
-    //     // 404 page
-    //     let _ = match stream.read(&mut buffer) {
-    //         Ok(_) => {
-    //             let error_page = match fs::read_to_string("index.html") {
-    //                 Ok(string) => string,
-    //                 Err(e) => {
-    //                     println!("Could not read from file:\nError{}", e);
-    //                     return;
-    //                 }
-    //             };
-
-    //             let status_line = "HTTP/1.1 404 NOT FOUND";
-    //             let resp = format!(
-    //                 "{}\r\nContent-Length: {}\r\n\r\n{}",
-    //                 status_line,
-    //                 error_page.len(),
-    //                 error_page
-    //             );
-    //             stream.write(resp.as_bytes()).unwrap();
-    //             stream.flush().unwrap();
-    //         }
-    //         Err(e) => {
-    //             println!("Could not read from stream:\nError{}", e);
-    //             return;
-    //         }
-    //     };
-    // }
-    // // // stream.read(&mut buffer).unwrap();
-    // // // println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
-    // // let _ = match stream.read(&mut buffer) {
-    // //     Ok(_) => {
-    // //         // println!("Request: {}", String::from_utf8_lossy(&buffer[..]))
-    // //         let web_page = match fs::read_to_string("index.html") {
-    // //             Ok(string) => string,
-    // //             Err(e) => {
-    // //                 println!("Could not read from file:\nError{}", e);
-    // //                 return;
-    // //             }
-    // //         };
-
-    // //         let error_page = match fs::read_to_string("index.html") {
-    // //             Ok(string) => string,
-    // //             Err(e) => {
-    // //                 println!("Could not read from file:\nError{}", e);
-    // //                 return;
-    // //             }
-    // //         };
-    // //     }
-    // //     Err(e) => {
-    // //         println!("Could not read from stream:\nError{}", e);
-    // //         return;
-    // //     }
-    // // };
-
-    // /*
-    // REQUEST Body:
-
-    // HTTP-Version Status-Code Reason-Phrase CRLF
-    // headers CRLF
-    // message-body
-
-    // ex: HTTP/1.1 200 OK\r\n\r\n
-    // */
+    ex: HTTP/1.1 200 OK\r\n\r\n
+    */
 }
