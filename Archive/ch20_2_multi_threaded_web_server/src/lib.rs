@@ -3,25 +3,59 @@ use std::{
     thread,
 };
 
+enum Message {
+    NewJob(Job),
+    Terminate,
+}
+
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: mpsc::Sender<Message>,
+}
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        println!("Sending Terminate message to Workers");
+
+        for _ in &mut self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        println!("Shutting down workers");
+
+        for worker in &mut self.workers {
+            println!("Shutting down Worker:{}", worker.id);
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+            // worker.thread.take().unwrap().join().unwrap();
+        }
+    }
 }
 
 struct Worker {
     id: usize,
-    thread: thread::JoinHandle<()>,
+    thread: Option<thread::JoinHandle<()>>,
 }
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
+        let thread = thread::spawn(move || loop {
+            // loop:: cause we want our `thread` to constantly look for JOBS
+            let message = receiver.lock().unwrap().recv().unwrap();
+            match message {
+                Message::NewJob(job) => {
+                    println!("WORKER:{} assigned a JOB; executing....", id);
+                    job();
+                }
+                Message::Terminate => {
+                    println!("WORKER:{} Shutting Down....", id);
+                    break;
+                }
+            };
+        });
+
         Worker {
             id,
-            thread: thread::spawn(move || loop {
-                // loop:: cause we want our `thread` to constantly look for JOBS
-                let job = receiver.lock().unwrap().recv().unwrap();
-                println!("WORKER:{} assigned a JOB; executing....", id);
-                job();
-            }),
+            thread: Some(thread),
         }
     }
 }
@@ -77,6 +111,6 @@ impl ThreadPool {
         // Best way:: Channels
 
         let job = Box::new(f);
-        self.sender.send(job).unwrap();
+        self.sender.send(Message::NewJob(job)).unwrap();
     }
 }
