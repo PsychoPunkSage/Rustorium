@@ -17,7 +17,7 @@ fn main() {
 
     let thread_pool = ThreadPool::new(5);
 
-    for stream in listener.incoming() {
+    for stream in listener.incoming().take(3) {
         // .incoming() ::> iterator over the connections being received on this listener
         let stream = match stream {
             Ok(st) => st,
