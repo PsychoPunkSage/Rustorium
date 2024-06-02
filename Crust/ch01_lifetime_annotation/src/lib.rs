@@ -1,8 +1,8 @@
 // #![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct StrSplit<'a> {
-    remainder: &'a str,
+    remainder: Option<&'a str>,
     delimiter: &'a str,
 }
 
@@ -16,7 +16,7 @@ impl<'a> StrSplit<'a> {
     */
     pub fn new(haystack: &'a str, delimiter: &'a str) -> Self {
         Self {
-            remainder: haystack,
+            remainder: Some(haystack),
             delimiter,
         }
     }
@@ -33,20 +33,28 @@ impl<'a> Iterator for StrSplit<'a> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(next_delim) = self.remainder.find(self.delimiter) {
-            let until_delimiter = &self.remainder[..next_delim];
-            self.remainder = &self.remainder[(next_delim + self.delimiter.len())..];
-            Some(until_delimiter)
-        } else if self.delimiter.is_empty() {
-            None
+        if let Some(ref mut remainder) = self.remainder {
+            // let remainder = self.remainder.as_mut()?;    -->    .as)mut() :: returns Option<&mut T>
+            if let Some(next_delim) = remainder.find(self.delimiter) {
+                let until_delim = &remainder[..next_delim];
+                *remainder = &remainder[(next_delim + self.delimiter.len())..];
+                Some(until_delim)
+            } else {
+                self.remainder.take()
+                // .take() ::> impl on Option<T>
+                // if Option == None ::> returns None
+                // if Option == Some ::> returns Some + Set the value to none
+            }
         } else {
-            let rest = self.remainder;
-            // &'a str       &'static str
-            // We can assign a lifetime with `same type` of lifetime or `longer` lifetime. VICE VERSA not true.
-            self.remainder = "";
-            Some(rest)
+            None
         }
     }
+}
+
+fn until_char(s: &str, c: char) -> &str {
+    StrSplit::new(s, &c.to_string())
+        .next()
+        .expect("StrSplitter always returns at-least one result")
 }
 
 #[cfg(test)]
@@ -56,9 +64,15 @@ mod tests {
     #[test]
     fn it_works() {
         let haystack = "a b c d e f";
-        let mut letters = StrSplit::new(haystack, " ");
-        println!("{:?}", letters.next());
-        assert!(letters.eq(vec!["a", "b", "c", "d", "e", "f"].into_iter()))
-        // assert_eq!(2 + 2, 3);
+        let letters: Vec<_> = StrSplit::new(haystack, " ").collect();
+        // println!("letters: {:?}", letters);
+        assert_eq!(letters, vec!["a", "b", "c", "d", "e", "f"]);
+        let letters = StrSplit::new(haystack, " ");
+        // println!("letters: {:?}", letters);
+        // println!(
+        //     "letters: {:?}",
+        //     vec!["a", "b", "c", "d", "e", "f"].into_iter()
+        // );
+        assert!(letters.eq(vec!["a", "b", "c", "d", "e", "f"].into_iter()));
     }
 }
