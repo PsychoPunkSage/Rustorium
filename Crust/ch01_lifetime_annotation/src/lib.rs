@@ -1,4 +1,5 @@
 // #![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
+#![warn(rust_2018_idioms)]
 
 /*
 MULTIPLE LIFETIMES::
@@ -7,12 +8,12 @@ MULTIPLE LIFETIMES::
 */
 
 #[derive(Debug)]
-pub struct StrSplit<'haystack, 'delimiter> {
+pub struct StrSplit<'haystack, /*D*/ D> {
     remainder: Option<&'haystack str>,
-    delimiter: &'delimiter str,
+    delimiter: D,
 }
 
-impl<'haystack, 'delimiter> StrSplit<'haystack, 'delimiter> {
+impl<'haystack, D> StrSplit<'haystack, D> {
     // We can use `StrSplit` for as long as `input string` are valid !!!
     /*
     Me to Complier...
@@ -20,7 +21,7 @@ impl<'haystack, 'delimiter> StrSplit<'haystack, 'delimiter> {
 
     impl<'haystack> ::> this says that this impl is generic over this lifetime 'haystack...
     */
-    pub fn new(haystack: &'haystack str, delimiter: &'delimiter str) -> Self {
+    pub fn new(haystack: &'haystack str, delimiter: D) -> Self {
         Self {
             remainder: Some(haystack),
             delimiter,
@@ -35,15 +36,22 @@ fn multiply(x: (), y: i32) -> i32 {
 }
 */
 
-impl<'haystack, 'delimiter> Iterator for StrSplit<'haystack, 'delimiter> {
+trait Delimiter {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)>;
+}
+
+impl<'haystack, D> Iterator for StrSplit<'haystack, D>
+where
+    D: Delimiter,
+{
     type Item = &'haystack str;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(ref mut remainder) = self.remainder {
             // let remainder = self.remainder.as_mut()?;    -->    .as)mut() :: returns Option<&mut T>
-            if let Some(next_delim) = remainder.find(self.delimiter) {
-                let until_delim = &remainder[..next_delim];
-                *remainder = &remainder[(next_delim + self.delimiter.len())..];
+            if let Some((delim_start, delim_end)) = self.delimiter.find_next(&remainder) {
+                let until_delim = &remainder[..delim_start];
+                *remainder = &remainder[delim_end..];
                 Some(until_delim)
             } else {
                 self.remainder.take()
@@ -57,15 +65,32 @@ impl<'haystack, 'delimiter> Iterator for StrSplit<'haystack, 'delimiter> {
     }
 }
 
+impl Delimiter for &str {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+        s.find(self).map(|start| (start, start + self.len()))
+    }
+}
+
+impl Delimiter for char {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+        s.char_indices()
+            .find(|(_, c)| c == self)
+            .map(|(start, _)| (start, start + self.len_utf8()))
+    }
+}
+
 /*
 String -> &str [cheap : AsRef]
 &str -> String [expensive: Clone/mem-copy]
 */
 
 fn until_char(s: &str, c: char) -> &str {
-    StrSplit::new(s, &c.to_string())
+    StrSplit::new(s, c)
         .next()
         .expect("StrSplitter always returns at-least one result")
+    // StrSplit::new(s, &*c.to_string())
+    //     .next()
+    //     .expect("StrSplitter always returns at-least one result")
 }
 
 #[cfg(test)]
