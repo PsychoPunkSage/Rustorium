@@ -1,0 +1,3 @@
+> cargo install cargo-expand    ::> Install cargo-expand
+> cargo expand                  ::> To see the expanded version of macro
+> cargo expand --lib --tests    ::> To see the expanded version of macro along with tests.
