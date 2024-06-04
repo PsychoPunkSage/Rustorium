@@ -7,17 +7,17 @@ ident:: all the expr and vars inside `macro` exist in different spaces/world. So
 #[macro_export]
 macro_rules! ppsvec {
     // ($arg1:ty, $arg2:expr, $arg3:path) => {};
-    ($arg1:ty => $arg2:ident) => {
-        type $arg2 = $arg1;
-    };
+    // ($arg1:ty => $arg2:ident) => {
+    //     type $arg2 = $arg1;
+    // };
 
-    ($arg1:ty as $arg2:ident) => {
-        type $arg2 = $arg1;
-    };
+    // ($arg1:ty as $arg2:ident) => {
+    //     type $arg2 = $arg1;
+    // };
 
-    ($x:ident) => {
-        $x += 1;
-    };
+    // ($x:ident) => {
+    //     $x += 1;
+    // };
 
     () => {
         Vec::new()
