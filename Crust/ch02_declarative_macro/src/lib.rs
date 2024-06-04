@@ -52,13 +52,13 @@ macro_rules! ppsvec {
 
     // `,` ::> We can use any single rust token in place of `,` <Given the compatibility>
     // `?` ::> either the sequence is present or it is not present.
-    ($($element:expr),+ $(,)?) => {
-        {
-            let mut vs = Vec::new();
-            $(vs.push($element);)+ // + ::> to show repetition
-            vs
-        }
-    };
+    // ($($element:expr),+ $(,)?) => {
+    //     {
+    //         let mut vs = Vec::new();
+    //         $(vs.push($element);)+ // + ::> to show repetition
+    //         vs
+    //     }
+    // };
 
     ($element:expr; $count:expr) => {
         {
@@ -70,10 +70,29 @@ macro_rules! ppsvec {
             //     // Cause it checks allocation for each and every push.
             //     vs.push(x.clone());
             // }
-            vs.extend(std::iter::repeat($element).take(count)); // Wayyy... efficient
+            // vs.extend(::std::iter::repeat($element).take(count)); // Wayyy... efficient
+            vs.resize(count, $element); // Even better... No need to do bound check
             vs
         }
-    }
+    };
+
+    ($($element:expr),*) => {
+        {
+            // [CHECK] that `count` is constant..
+            const _: usize = $crate::ppsvec![@COUNT; $($element),*];
+            #[allow(unused_mut)]
+            let mut vs = Vec::with_capacity($crate::ppsvec![@COUNT; $($element),*]);
+            $(vs.push($element);)*
+            vs
+        }
+    };
+
+    (@COUNT; $($element:expr),*) => {
+        // @SUBST ::> Saves us from calling `expr` lots of time.
+        [$($crate::ppsvec![@SUBST; $element]),*].len()
+    };
+
+    (@SUBST; $_element:expr) => {()};
 }
 
 trait MaxValue {
@@ -145,7 +164,7 @@ mod tests {
     #[test]
     fn multiple_ele_vec() {
         let x: Vec<u32> = ppsvec![
-            23, 32, 34, 103, 67, 293, 2949, 402, 3924, 7, 89, 20, 9403, 944, 103, 49, 95, 4, 34,
+            23, 32, 34, 103, 67, 293, 2949, 402, 3924, 7, 89, 20, 9403, 944, 103, 49, 95, 4, 34
         ];
         assert!(!x.is_empty());
         assert_eq!(x.len(), 19);
