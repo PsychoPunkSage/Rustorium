@@ -79,20 +79,25 @@ macro_rules! ppsvec {
     ($($element:expr),*) => {
         {
             // [CHECK] that `count` is constant..
-            const _: usize = $crate::ppsvec![@COUNT; $($element),*];
+            const _: usize = $crate::count![@COUNT; $($element),*];
             #[allow(unused_mut)]
-            let mut vs = Vec::with_capacity($crate::ppsvec![@COUNT; $($element),*]);
+            let mut vs = Vec::with_capacity($crate::count![@COUNT; $($element),*]);
             $(vs.push($element);)*
             vs
         }
     };
+}
 
+#[macro_export]
+#[doc(hidden)]
+macro_rules! count {
     (@COUNT; $($element:expr),*) => {
-        // @SUBST ::> Saves us from calling `expr` lots of time.
-        [$($crate::ppsvec![@SUBST; $element]),*].len()
-    };
+        [$($crate::count![@SUBST; $element]),*].len()
 
-    (@SUBST; $_element:expr) => {()};
+    };
+    (@SUBST; $_element:expr) => {
+        ()
+    };
 }
 
 trait MaxValue {
