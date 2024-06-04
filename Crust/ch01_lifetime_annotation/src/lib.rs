@@ -8,7 +8,7 @@ MULTIPLE LIFETIMES::
 */
 
 #[derive(Debug)]
-pub struct StrSplit<'haystack, /*D*/ D> {
+pub struct StrSplit<'haystack, /*'Delimiter*/ D> {
     remainder: Option<&'haystack str>,
     delimiter: D,
 }
