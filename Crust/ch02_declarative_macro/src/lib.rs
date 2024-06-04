@@ -76,7 +76,7 @@ macro_rules! ppsvec {
         }
     };
 
-    ($($element:expr),*) => {
+    ($($element:expr),* $(,)?) => {
         {
             // [CHECK] that `count` is constant..
             const C: usize = $crate::count![@COUNT; $($element),*];
@@ -136,13 +136,9 @@ max!(i64);
 //     u32 => notalsoau32
 // ];
 
-fn empty_vec() {
-    let x: Vec<u32> = ppsvec![];
-    assert!(x.is_empty());
-}
-
 #[cfg(test)]
 mod tests {
+
     #[test]
     fn empty_vec() {
         let x: Vec<u32> = ppsvec![];
@@ -169,7 +165,7 @@ mod tests {
     #[test]
     fn multiple_ele_vec() {
         let x: Vec<u32> = ppsvec![
-            23, 32, 34, 103, 67, 293, 2949, 402, 3924, 7, 89, 20, 9403, 944, 103, 49, 95, 4, 34
+            23, 32, 34, 103, 67, 293, 2949, 402, 3924, 7, 89, 20, 9403, 944, 103, 49, 95, 4, 34,
         ];
         assert!(!x.is_empty());
         assert_eq!(x.len(), 19);
