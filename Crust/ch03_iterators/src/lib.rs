@@ -99,4 +99,24 @@ mod tests {
     fn two_wide() {
         assert_eq!(flatten(vec![vec!["pps"], vec!["ap"]]).count(), 2);
     }
+
+    #[test]
+    fn reverse_two() {
+        assert_eq!(
+            flatten(std::iter::once(vec!["pps", "ap"]))
+                .rev()
+                .collect::<Vec<_>>(),
+            vec!["ap", "pps"]
+        );
+    }
+
+    #[test]
+    fn reverse_two_wide() {
+        assert_eq!(
+            flatten(vec![vec!["pps"], vec!["ap"]])
+                .rev()
+                .collect::<Vec<_>>(),
+            vec!["ap", "pps"]
+        );
+    }
 }
