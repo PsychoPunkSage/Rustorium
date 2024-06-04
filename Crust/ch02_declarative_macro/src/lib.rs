@@ -62,11 +62,15 @@ macro_rules! ppsvec {
 
     ($element:expr; $count:expr) => {
         {
-            let mut vs = Vec::new();
-            let x = $element;
-            for _ in 0..$count {
-                vs.push(x.clone());
-            }
+            let count = $count;
+            let mut vs = Vec::with_capacity(count);
+            // let x = $element;
+            // for _ in 0..count {
+            //     // [DUMB]
+            //     // Cause it checks allocation for each and every push.
+            //     vs.push(x.clone());
+            // }
+            vs.extend(std::iter::repeat($element).take(count)); // Wayyy... efficient
             vs
         }
     }
