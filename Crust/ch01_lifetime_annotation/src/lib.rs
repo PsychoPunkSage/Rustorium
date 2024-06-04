@@ -48,7 +48,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(ref mut remainder) = self.remainder {
-            // let remainder = self.remainder.as_mut()?;    -->    .as)mut() :: returns Option<&mut T>
+            // let remainder = self.remainder.as_mut()?;    -->    .as_mut() :: returns Option<&mut T>
             if let Some((delim_start, delim_end)) = self.delimiter.find_next(&remainder) {
                 let until_delim = &remainder[..delim_start];
                 *remainder = &remainder[delim_end..];
