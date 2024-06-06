@@ -4,7 +4,8 @@ where
     O::Item: IntoIterator,
 {
     outer: O,
-    inner: Option<<O::Item as IntoIterator>::IntoIter>,
+    front_iter: Option<<O::Item as IntoIterator>::IntoIter>,
+    back_iter: Option<<O::Item as IntoIterator>::IntoIter>,
 }
 impl<O> Flatten<O>
 where
@@ -14,7 +15,8 @@ where
     fn new(iter: O) -> Self {
         Flatten {
             outer: iter,
-            inner: None,
+            front_iter: None,
+            back_iter: None,
         }
     }
 }
@@ -26,14 +28,18 @@ where
     type Item = <O::Item as IntoIterator>::Item;
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(ref mut inner_iter) = self.inner {
+            if let Some(ref mut inner_iter) = self.front_iter {
                 if let Some(i) = inner_iter.next() {
                     return Some(i);
                 }
-                self.inner = None;
+                self.front_iter = None;
             }
-            let next_inner_item = self.outer.next()?.into_iter(); // Get inner items
-            self.inner = Some(next_inner_item);
+            if let Some(next_inner_item) = self.outer.next() {
+                // Get inner items
+                self.front_iter = Some(next_inner_item.into_iter());
+            } else {
+                return self.back_iter.as_mut()?.next();
+            }
         }
 
         /*
@@ -51,14 +57,17 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(ref mut inner_iter) = self.inner {
+            if let Some(ref mut inner_iter) = self.back_iter {
                 if let Some(i) = inner_iter.next_back() {
                     return Some(i);
                 }
-                self.inner = None;
+                self.back_iter = None;
             }
-            let next_inner_item = self.outer.next_back()?.into_iter(); // Get inner items
-            self.inner = Some(next_inner_item);
+            if let Some(next_back_inner_item) = self.outer.next_back() {
+                self.back_iter = Some(next_back_inner_item.into_iter());
+            } else {
+                return self.front_iter.as_mut()?.next_back();
+            } // Get inner items
         }
     }
 }
@@ -118,5 +127,18 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["ap", "pps"]
         );
+    }
+
+    #[test]
+    fn extensive_back_next() {
+        let mut flatten = Flatten::new(vec![vec!["1", "2", "3"], vec!["4", "5", "6"]].into_iter());
+        assert_eq!(flatten.next(), Some("1"));
+        assert_eq!(flatten.next_back(), Some("6"));
+        assert_eq!(flatten.next(), Some("2"));
+        assert_eq!(flatten.next_back(), Some("5"));
+        assert_eq!(flatten.next(), Some("3"));
+        assert_eq!(flatten.next_back(), Some("4"));
+        assert_eq!(flatten.next(), None);
+        assert_eq!(flatten.next_back(), None);
     }
 }
