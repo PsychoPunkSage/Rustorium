@@ -1,3 +1,24 @@
+// FLATTEN: it is compile time construct. We need to supply type @compile time.
+pub trait ExtIterator: Iterator {
+    fn pps_flatten(self) -> Flatten<Self>
+    where
+        Self: Sized,
+        Self::Item: IntoIterator;
+}
+
+impl<T> ExtIterator for T
+where
+    T: Iterator,
+{
+    fn pps_flatten(self) -> Flatten<Self>
+    where
+        Self: Sized,
+        Self::Item: IntoIterator,
+    {
+        flatten(self)
+    }
+}
+
 pub struct Flatten<O>
 where
     O: Iterator,
@@ -53,6 +74,7 @@ where
     fn next_back(&mut self) -> Option<Self::Item> {
         loop {
             if let Some(ref mut inner_iter) = self.back_iter {
+                // if let Some(inner_iter) = &mut self.back_iter {
                 if let Some(i) = inner_iter.next_back() {
                     return Some(i);
                 }
@@ -154,5 +176,22 @@ mod tests {
         assert_eq!(flatten.next(), Some(0));
         assert_eq!(flatten.next(), Some(1));
         assert_eq!(flatten.next(), Some(2));
+    }
+
+    #[test]
+    fn flatten_flatten_deep() {
+        assert_eq!(flatten(flatten(vec![vec![vec![1, 2, 3, 4]]])).count(), 4);
+        assert_eq!(
+            vec![vec![vec![1, 2, 3, 4]]].into_iter().flatten().count(),
+            1
+        );
+        assert_eq!(
+            vec![vec![vec![1, 2, 3, 4]]]
+                .into_iter()
+                .flatten()
+                .flatten()
+                .count(),
+            4
+        );
     }
 }
