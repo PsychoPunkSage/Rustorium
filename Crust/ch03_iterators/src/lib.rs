@@ -28,7 +28,7 @@ where
     type Item = <O::Item as IntoIterator>::Item;
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(ref mut inner_iter) = self.front_iter {
+            if let Some(inner_iter) = self.front_iter.as_mut() {
                 if let Some(i) = inner_iter.next() {
                     return Some(i);
                 }
@@ -41,11 +41,6 @@ where
                 return self.back_iter.as_mut()?.next();
             }
         }
-
-        /*
-        OR
-        self.outer.next().and_then(|inner| inner.into_iter().next())
-        */
     }
 }
 
@@ -140,5 +135,24 @@ mod tests {
         assert_eq!(flatten.next_back(), Some("4"));
         assert_eq!(flatten.next(), None);
         assert_eq!(flatten.next_back(), None);
+    }
+
+    #[test]
+    fn inf() {
+        let mut flatten = flatten((0..).map(|i| 0..i));
+        /*
+        OUTER   InnerRange  INNER
+        0          0..0      [empty]
+        1          0..1      [0]
+        2          0..2      [0, 1]
+        3          0..3      [0, 1, 2]
+        .....
+        */
+        assert_eq!(flatten.next(), Some(0));
+        assert_eq!(flatten.next(), Some(0));
+        assert_eq!(flatten.next(), Some(1));
+        assert_eq!(flatten.next(), Some(0));
+        assert_eq!(flatten.next(), Some(1));
+        assert_eq!(flatten.next(), Some(2));
     }
 }
