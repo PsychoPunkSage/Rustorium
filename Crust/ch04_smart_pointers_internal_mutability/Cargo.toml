@@ -3,4 +3,8 @@ name = "ch04_smart_pointers_internal_mutability"
 version = "0.1.0"
 edition = "2021"
 
+# [bin]
+# name = "cell"
+# path = "src/cell.rs"
+
 [dependencies]
