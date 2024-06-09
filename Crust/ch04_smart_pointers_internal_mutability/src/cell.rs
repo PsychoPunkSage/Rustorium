@@ -1,5 +1,6 @@
 use std::cell::UnsafeCell;
 
+// Cell allows us to Mutate its contents under `Shared reference`
 #[warn(dead_code)]
 pub struct Cell<T> {
     value: UnsafeCell<T>,
@@ -26,27 +27,23 @@ impl<T> Cell<T> {
     pub fn set(&self, value: T) {
         // But what will happen if 2 different `threads` changes the value at same time... there is nothing to prevent it...
         // So we must implement <!Sync> in Cell<T>
-        /// SAFETY: we know no-one else is concurrently mutating the self.value (because of !Sync)
-        /// SAFETY: we know we're not invalidating any reference, because we never give anything out <via. any reference>.
-        unsafe {
-            *self.value.get() = value
-        };
+        // SAFETY: we know no-one else is concurrently mutating the self.value (because of !Sync)
+        // SAFETY: we know we're not invalidating any reference, because we never give anything out <via. any reference>.
+        unsafe { *self.value.get() = value };
     }
 
     pub fn get(&self) -> T
     where
         T: Copy,
     {
-        /// SAFETY: we know no-one else is modifying this value, since only this thread can mutate (cause of !Sync) but @this_moment it is implementing `get` so, `set` is not being called.
-        unsafe {
-            *self.value.get()
-        }
+        // SAFETY: we know no-one else is modifying this value, since only this thread can mutate (cause of !Sync) but @this_moment it is implementing `get` so, `set` is not being called.
+        unsafe { *self.value.get() }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::Cell;
+    // use super::Cell;
 
     // #[test]
     // // #[should_panic]
