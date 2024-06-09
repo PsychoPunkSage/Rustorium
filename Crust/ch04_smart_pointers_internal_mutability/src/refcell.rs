@@ -77,11 +77,20 @@ pub struct RefMut<'refcell, T> {
     refcell: &'refcell RefCell<T>,
 }
 
+impl<T> Drop for RefMut<'_, T> {
+    fn drop(&mut self) {
+        match self.refcell.state.get() {
+            RefState::Shared(_) | RefState::Unshared => unreachable!(),
+            RefState::Exclusive => self.refcell.state.set(RefState::Unshared),
+        }
+    }
+}
+
 impl<T> std::ops::Deref for RefMut<'_, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
         // SAFETY:
-        // a `Ref` is only created if no exclusive refernece have been given out
+        // a `RefMut` is only created if no exclusive refernece have been given out
         // once it is given out, state is set to Shared, so no exclusive refernece are given
         // so dereferencing into a shared reference is possible.
         unsafe { &*self.refcell.value.get() }
