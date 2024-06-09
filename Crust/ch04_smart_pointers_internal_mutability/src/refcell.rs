@@ -20,11 +20,22 @@ impl<T> RefCell<T> {
         }
     }
 
-    pub fn borrow(&self) -> Option<T> {
-        None
+    pub fn borrow(&self) -> Option<&T> {
+        match self.state {
+            RefState::Unshared => Some(unsafe { &*self.value.get() }),
+            RefState::Shared(_) => {
+                // self.state = RefState::Shared(n + 1);
+                Some(unsafe { &*self.value.get() })
+            }
+            RefState::Exclusive => None,
+        }
     }
 
     pub fn borrow_mut(&self) -> Option<&mut T> {
-        None
+        if let RefState::Unshared = self.state {
+            Some(unsafe { &mut *self.value.get() })
+        } else {
+            None
+        }
     }
 }
