@@ -11,6 +11,15 @@ impl<T> Sender<T> {
         self.inner.available.notify_one();
     }
 }
+
+impl<T> Clone for Sender<T> {
+    // T -> is already clonable as we are using "Arc"
+    fn clone(&self) -> Self {
+        Sender {
+            inner: Arc::clone(&self.inner),
+        }
+    }
+}
 // <Arc> is needed otherwise the "Sender" and "Receiver" will have 2 different instances of `Inner`... So How will they communicate...
 pub struct Receiver<T> {
     inner: Arc<Inner<T>>,
@@ -52,6 +61,7 @@ Boolean Semaphore:
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
         queue: Mutex::default(),
+        available: Condvar::new(),
     };
     let inner = Arc::new(inner);
     (
@@ -62,4 +72,16 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
             inner: inner.clone(),
         },
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ping_pong() {
+        let (mut tx, mut sx) = channel();
+        tx.send(36);
+        assert_eq!(sx.recv(), 36)
+    }
 }
