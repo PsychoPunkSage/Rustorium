@@ -25,16 +25,31 @@ impl<T> Clone for Sender<T> {
         }
     }
 }
+
+impl<T> Drop for Sender<T> {
+    fn drop(&mut self) {
+        let mut inner = self.shared.inner.lock().unwrap();
+        inner.senders -= 1;
+        let was_last = inner.senders == 0;
+        drop(inner);
+        // Wake up the `receiver` otherwise it will never wake up.
+        if was_last {
+            self.shared.available.notify_one();
+        }
+    }
+}
+
 // <Arc> is needed otherwise the "Sender" and "Receiver" will have 2 different instances of `Shared`... So How will they communicate...
 pub struct Receiver<T> {
     shared: Arc<Shared<T>>,
 }
 impl<T> Receiver<T> {
-    pub fn recv(&mut self) -> T {
+    pub fn recv(&mut self) -> Option<T> {
         let mut inner = self.shared.inner.lock().unwrap();
         loop {
             match inner.queue.pop_front() {
-                Some(msg) => return msg,
+                Some(msg) => return Some(msg),
+                None if inner.senders == 0 => return None,
                 None => {
                     inner = self.shared.available.wait(inner).unwrap(); // Need to Drop guard in order to wait otherwise you cannot...
                 }
@@ -96,6 +111,6 @@ mod tests {
     fn ping_pong() {
         let (mut tx, mut rx) = channel();
         tx.send(36);
-        assert_eq!(rx.recv(), 36)
+        assert_eq!(rx.recv(), Some(36))
     }
 }
