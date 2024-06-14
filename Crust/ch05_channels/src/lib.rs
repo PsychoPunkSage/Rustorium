@@ -85,7 +85,7 @@ Boolean Semaphore:
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
-        queue: VecDeque::new(),
+        queue: VecDeque::default(),
         senders: 1,
     };
     let shared = Shared {
@@ -93,6 +93,7 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
         available: Condvar::new(),
     };
     let shared = Arc::new(shared);
+
     (
         Sender {
             shared: shared.clone(),
@@ -112,5 +113,12 @@ mod tests {
         let (mut tx, mut rx) = channel();
         tx.send(36);
         assert_eq!(rx.recv(), Some(36))
+    }
+
+    #[test]
+    fn all_senders_gone() {
+        let (tx, mut rx) = channel::<()>();
+        drop(tx);
+        assert_eq!(rx.recv(), None)
     }
 }
