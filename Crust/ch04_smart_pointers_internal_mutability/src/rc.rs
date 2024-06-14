@@ -1,5 +1,5 @@
 // Single threaded reference counting pointer
-// Similar to RefCell BUT does not provide Mutability... want mutability? use `Cell` ot `Refcell` inside Rc.
+// Similar to RefCell BUT does not provide Mutability... want mutability? use `Cell` or `Refcell` inside Rc.
 // Keep track on no. of shared references and it Drops the value once the last reference gets out of scope.
 
 use crate::cell::Cell;
