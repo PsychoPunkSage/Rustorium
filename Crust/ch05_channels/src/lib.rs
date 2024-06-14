@@ -1,44 +1,54 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 pub struct Sender<T> {
-    inner: Arc<Inner<T>>,
+    shared: Arc<Shared<T>>,
 }
 impl<T> Sender<T> {
     pub fn send(&mut self, msg: T) {
-        let mut queue = self.inner.queue.lock().unwrap();
-        queue.push_back(msg);
-        drop(queue); // Drop the lock, so the other thread can take it.
-        self.inner.available.notify_one();
+        let mut inner = self.shared.inner.lock().unwrap();
+        inner.queue.push_back(msg);
+        drop(inner); // Drop the lock, so the other thread can take it.
+        self.shared.available.notify_one();
     }
 }
 
 impl<T> Clone for Sender<T> {
     // T -> is already clonable as we are using "Arc"
+    // On every clone, need to increase no. of sender.
     fn clone(&self) -> Self {
+        let mut inner = self.shared.inner.lock().unwrap();
+        inner.senders += 1;
+        drop(inner);
+
         Sender {
-            inner: Arc::clone(&self.inner),
+            shared: Arc::clone(&self.shared),
         }
     }
 }
-// <Arc> is needed otherwise the "Sender" and "Receiver" will have 2 different instances of `Inner`... So How will they communicate...
+// <Arc> is needed otherwise the "Sender" and "Receiver" will have 2 different instances of `Shared`... So How will they communicate...
 pub struct Receiver<T> {
-    inner: Arc<Inner<T>>,
+    shared: Arc<Shared<T>>,
 }
 impl<T> Receiver<T> {
     pub fn recv(&mut self) -> T {
-        let mut queue = self.inner.queue.lock().unwrap();
+        let mut inner = self.shared.inner.lock().unwrap();
         loop {
-            match queue.pop_front() {
+            match inner.queue.pop_front() {
                 Some(msg) => return msg,
                 None => {
-                    queue = self.inner.available.wait(queue).unwrap(); // Need to Drop guard in order to wait otherwise you cannot...
+                    inner = self.shared.available.wait(inner).unwrap(); // Need to Drop guard in order to wait otherwise you cannot...
                 }
             }
         }
     }
 }
+
 struct Inner<T> {
-    queue: Mutex<VecDeque<T>>,
+    queue: VecDeque<T>,
+    senders: usize,
+}
+struct Shared<T> {
+    inner: Mutex<Inner<T>>,
     available: Condvar,
 }
 /*
@@ -60,16 +70,20 @@ Boolean Semaphore:
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
-        queue: Mutex::default(),
+        queue: VecDeque::new(),
+        senders: 1,
+    };
+    let shared = Shared {
+        inner: Mutex::new(inner),
         available: Condvar::new(),
     };
-    let inner = Arc::new(inner);
+    let shared = Arc::new(shared);
     (
         Sender {
-            inner: inner.clone(),
+            shared: shared.clone(),
         },
         Receiver {
-            inner: inner.clone(),
+            shared: shared.clone(),
         },
     )
 }
@@ -80,8 +94,8 @@ mod tests {
 
     #[test]
     fn ping_pong() {
-        let (mut tx, mut sx) = channel();
+        let (mut tx, mut rx) = channel();
         tx.send(36);
-        assert_eq!(sx.recv(), 36)
+        assert_eq!(rx.recv(), 36)
     }
 }
