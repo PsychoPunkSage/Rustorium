@@ -42,13 +42,25 @@ impl<T> Drop for Sender<T> {
 // <Arc> is needed otherwise the "Sender" and "Receiver" will have 2 different instances of `Shared`... So How will they communicate...
 pub struct Receiver<T> {
     shared: Arc<Shared<T>>,
+    buffer: VecDeque<T>, // #optimization
 }
 impl<T> Receiver<T> {
     pub fn recv(&mut self) -> Option<T> {
+        if let Some(t) = self.buffer.pop_front() {
+            // If there is something left in `buffer`, then grab it first.
+            return Some(t);
+        }
+
         let mut inner = self.shared.inner.lock().unwrap();
         loop {
             match inner.queue.pop_front() {
-                Some(msg) => return Some(msg),
+                Some(msg) => {
+                    if !inner.queue.is_empty() {
+                        // If there is new data in `queue` then steal those data and put it in `buffer`
+                        std::mem::swap(&mut self.buffer, &mut inner.queue);
+                    }
+                    return Some(msg);
+                }
                 None if inner.senders == 0 => return None,
                 None => {
                     inner = self.shared.available.wait(inner).unwrap(); // Need to Drop guard in order to wait otherwise you cannot...
@@ -100,6 +112,7 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
         },
         Receiver {
             shared: shared.clone(),
+            buffer: VecDeque::default(),
         },
     )
 }
@@ -120,5 +133,12 @@ mod tests {
         let (tx, mut rx) = channel::<()>();
         drop(tx);
         assert_eq!(rx.recv(), None)
+    }
+
+    #[test]
+    fn receiver_gone() {
+        let (mut tx, rx) = channel::<i32>();
+        drop(rx);
+        tx.send(36);
     }
 }
