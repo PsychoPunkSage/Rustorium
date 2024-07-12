@@ -35,9 +35,13 @@ fn main() {
         });
 
         // USING Async
-        let network = read_from_networks();
-        let terminal = read_from_terminals();
+        let mut network = read_from_networks();
+        let mut terminal = read_from_terminals();
         let mut foo = foo2(_);
+
+        let mut f1 = tokio::fs::File::open("foo"); // std library `fs` don't support async functions.
+        let mut f2 = tokio::fs::File::create("bar");
+        let copy = tokio::io::copy(&mut f1, &mut f2);
 
         loop {
             select! {
@@ -45,21 +49,25 @@ fn main() {
                 // WAITS on various FUTURES....
                 // and tells which one got executed first.
 
-                stream <- network.await => {
+                stream <- (&mut network).await => {
                     // do something on stream
                 }
 
-                line <- terminal.await => {
+                line <- (&mut terminal).await => {
                     // do something with line
                 }
 
-                foo <- foo.await => {
+                foo <- (&mut foo).await => {
                     // 1. Wait on `file1` reading :: yield happens
                     // 2. control moves to the Top of call stack (i.e. select{})
                     // 3. then select will again check for any progress in `stream` or `line`
                     //      - if any of them changes; then run the required codes.
                     //      - if nothing changes then continue Awaiting `Foo2``
                     // 4. after this control shifts back to the bottom of the call stack.
+                }
+
+                _ <- copy.await {
+                    // Do something
                 }
             }
         }
