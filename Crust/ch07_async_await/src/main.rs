@@ -1,4 +1,4 @@
-use std::{fs::read_to_string, future::Future, io::BufRead};
+use std::{future::Future, io::BufRead};
 
 #[allow(dead_code, unused_variables)]
 
@@ -13,7 +13,7 @@ fn main() {
 
     // If NOT using async/await
     let read_from_terminal = std::thread::spawn(move || {
-        let mut x = std::io::Stdin::lock(std::io::stdin());
+        let mut x = std::io::Stdin::lock(&std::io::stdin());
         for lines in x.lines() {
             // Do something
         }
@@ -28,20 +28,31 @@ fn main() {
     });
 
     // USING Async
-    let network = read_from_network();
-    let terminal = read_from_terminal();
+    let network = read_from_networks();
+    let terminal = read_from_terminals();
 
-    select! {
-        // This macro in present in various library.
-        // WAITS on various FUTURES....
-        // and tells which one got executed first.
+    loop {
+        select! {
+            // This macro in present in various library.
+            // WAITS on various FUTURES....
+            // and tells which one got executed first.
 
-        stream <- network.await => {
-            // do something on stream
-        }
+            stream <- network.await => {
+                // do something on stream
+            }
 
-        line <- terminal.await => {
-            // do something with line
+            line <- terminal.await => {
+                // do something with line
+            }
+
+            foo <- foo2.await => {
+                // 1. Wait on `file1` reading :: yield happens
+                // 2. control moves to the Top of call stack (i.e. select{})
+                // 3. then select will again check for any progress in `stream` or `line`
+                //      - if any of them changes; then run the required codes.
+                //      - if nothing changes then continue Awaiting `Foo2``
+                // 4. after this control shifts back to the bottom of the call stack.
+            }
         }
     }
 
@@ -55,10 +66,14 @@ async fn foo1() -> usize {
     0
 }
 
+async fn read_to_strings(_: &str) {}
+async fn read_from_networks() {}
+async fn read_from_terminals() {}
+
 fn foo2() -> impl Future<Output = usize> {
     async {
         println!("Inside Foo2");
-        read_to_string("file1").await;
+        read_to_strings("file1").await;
         /*
         let fut = read_to_string("file1");
         let x = loop {
@@ -79,11 +94,11 @@ fn foo2() -> impl Future<Output = usize> {
         Whenever progress check <try_check_complete()> is performed; it starts from "bottom most" thing that previously called yield.
         */
         println!("Inside Foo2");
-        read_to_string("file2").await;
+        read_to_strings("file2").await;
         println!("Inside Foo2");
-        read_to_string("file3").await;
+        read_to_strings("file3").await;
         println!("Inside Foo2");
-        read_to_string("file4").await;
+        read_to_strings("file4").await;
         0
     }
 }
