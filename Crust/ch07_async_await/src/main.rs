@@ -1,3 +1,5 @@
+mod server;
+
 use std::{future::Future, io::BufRead};
 use tokio;
 
