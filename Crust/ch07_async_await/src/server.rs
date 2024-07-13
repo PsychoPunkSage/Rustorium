@@ -45,10 +45,14 @@ async fn handle_connection(_: tokio::net::TcpListener) {
     let join_handle = tokio::spawn(async move {
         let _ = x1.lock();
         // blablablabla
+
+        // Suppose we have an error which we cannot propogate...
+        // i.e. suppose an Error occured and there is no gurantee that `join_handle` is being awaited.....
+        // in such cases, use `event distribution` tool like `tracing` to decouple the "production of events" and the "subscription of events".
         0
     });
 
-    assert_eq!(join_handle.await.unwrap(), 0); // until and unless we await, we are not going to ge any value back....
+    assert_eq!(join_handle.await.unwrap(), 0); // until and unless we await, we are not going to get any value back.... similar to `thread spawning`.
 
     let x2 = Arc::clone(&x);
     let join_handle1 = tokio::spawn(async move {
@@ -58,3 +62,13 @@ async fn handle_connection(_: tokio::net::TcpListener) {
     });
     assert_eq!(join_handle1.await.unwrap(), 1);
 }
+
+/*
+RUST FUTURE DOESN'T DEPEND ON thread locals...
+    - though tokio uses `thread locals`
+    - Tokio does that simply interface...
+    Otherwise I have to thread the `Spawn exec` to the Runtime throughout the application to spawn thread anywhere.
+     ________
+    |DOWNSIDE|:: tokio doesnt work well in embeded contexts where there is no thread locals.
+     ========
+*/
