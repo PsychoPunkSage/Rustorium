@@ -1,3 +1,4 @@
+mod async_mutex;
 mod async_stack_var;
 mod async_trait;
 mod server;
