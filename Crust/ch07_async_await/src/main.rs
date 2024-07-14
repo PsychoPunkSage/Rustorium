@@ -1,4 +1,5 @@
 mod async_stack_var;
+mod async_trait;
 mod server;
 
 use std::{future::Future, io::BufRead};
