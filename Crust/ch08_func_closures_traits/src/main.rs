@@ -31,6 +31,8 @@ fn main() {
     // Demonstrated above.
 
     quox(bar1::<i32>);
+    quox1(&mut bar1::<i32>);
+    quox1(&mut bar1::<i32>);
 }
 
 fn bar() {}
@@ -62,7 +64,21 @@ fn bazz(f: fn(u32) -> u32) {
 
 fn quox<T>(f: T)
 where
+    T: FnOnce(u32) -> u32,
+{
+    println!("quox: {}", std::mem::size_of_val(&f))
+}
+
+fn quox1<T>(f: &mut T)
+where
+    T: FnOnce(u32) -> u32,
+{
+    println!("quox1: {}", std::mem::size_of_val(&f))
+}
+
+fn quox2<T>(f: &T)
+where
     T: Fn(u32) -> u32,
 {
-    println!("{}", std::mem::size_of_val(&f))
+    println!("quox1: {}", std::mem::size_of_val(&f))
 }
