@@ -28,13 +28,13 @@ async fn main() {
 /*
 Tokio::Mutex v/s std::Mutex
 
-1. i will lock X1
-2. then I will await `read_to_string`... i.e. it will yield!!
+1. 1st it will lock X1
+2. then it will await `read_to_string`... i.e. it will yield!!
 
 3. Now It will go to run other Future i.e. other spawn...
 4. it tries to grab `x2 lock`.... but the lock is already held by `X1`
 5. So, the std lib Lock will just BLOCK THE THREAD, as it don't know what to do next....
-    - This also means that executor's one htread is blocked... it doesn't get to complete `read_to_string`
+    - This also means that executor's one thread is blocked... it doesn't get to complete `read_to_string`
     - this means the lock is never dropped and hence we get a DEADLOCK...
 
 

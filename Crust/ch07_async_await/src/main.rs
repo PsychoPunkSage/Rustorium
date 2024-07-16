@@ -83,7 +83,7 @@ async fn main() {
                 // 3. then select will again check for any progress in `stream` or `line`
                 //      - if any of them changes; then run the required codes.
                 //      - if nothing changes then continue Awaiting `Foo2``
-                // 4. after this control shifts back to the bottom of the call stack.
+                // 4. after this control shifts back to the bottom of the call stack. (from where await was done...)
             }
 
             _ <- copy.await {
@@ -164,6 +164,4 @@ SYNTAX RELATION/SIMPLEFICATION
 /*
 ASYNC Overhead:
     - There is no significant overhead for making a fn `async`.
-    - async IO Read VS IO Read
-        *
 */

@@ -9,7 +9,7 @@ async fn main() {
 
     /*
         - At this point `Future` contains lot of Data... and passing it around will cause a huge overhead..
-        - Cause wherever the future is passed (ist can be selsct!{}, other function etc.)... we need to store the data repeatdly..
+        - Cause wherever the future is passed (it can be select!{}, other function etc.)... we need to store the data repeatdly..
         - AVOID:: Do Box-ing, this will provide a `pointer to the Heap allocation` which makes things easier...
 
         - thats why `Spawn` is cool,,, as it stores the |>> pointer to the Future <<| and awaits on that pointer....
@@ -38,7 +38,7 @@ async fn foo() {
 }
 
 /*
-When we write an `async fn`... The compiler generated sort-of `enum` of the `StateMachine`.
+When we write an `async fn`... The compiler generate sort-of `enum` of the `StateMachine`.
 
 enum StateMachine {
     Chunk1 {
