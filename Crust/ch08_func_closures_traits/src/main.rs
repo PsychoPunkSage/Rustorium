@@ -43,6 +43,19 @@ fn main() {
     */
 
     let mut f = |x: u32| return x;
+    /*
+    WHAT compiler generates from `closure`
+
+    struct f_closure <'scope> {
+        _any_captures_var: &'scope <type>,
+    }
+
+    impl<'scope> Fn() for f_closure<'scope> {
+        fn call(&self) {
+            // copy everything from closure def....
+        }
+    }
+    */
     bazz(f);
     quox(f);
     quox1(&mut f);
