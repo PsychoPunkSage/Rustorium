@@ -32,7 +32,21 @@ fn main() {
 
     quox(bar1::<i32>);
     quox1(&mut bar1::<i32>);
-    quox1(&mut bar1::<i32>);
+    quox2(&bar1::<i32>);
+
+    /*
+    Closure:
+        - Non-capturing closures
+            * coersible to Function pointers.
+        - Capturing closures
+            * NOT coersible to Function pointers. Because we need to know the state of each element in the closure.
+    */
+
+    let mut f = |x: u32| return x;
+    bazz(f);
+    quox(f);
+    quox1(&mut f);
+    quox2(&f);
 }
 
 fn bar() {}
@@ -43,7 +57,7 @@ async fn bar2() {}
 
 fn bazz(f: fn(u32) -> u32) {
     // Now here the `function item` is properly converted to `fn pointer`.
-    println!("{}", std::mem::size_of_val(&f));
+    println!("bazz: {}", std::mem::size_of_val(&f));
 }
 
 /*
@@ -80,5 +94,5 @@ fn quox2<T>(f: &T)
 where
     T: Fn(u32) -> u32,
 {
-    println!("quox1: {}", std::mem::size_of_val(&f))
+    println!("quox2: {}", std::mem::size_of_val(&f))
 }
