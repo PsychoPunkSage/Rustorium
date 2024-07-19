@@ -109,3 +109,8 @@ where
 {
     println!("quox2: {}", std::mem::size_of_val(&f))
 }
+
+fn make_fn() -> impl Fn() {
+    let z = String::new();
+    move || println!("make_fn: {}", z)
+}
