@@ -114,3 +114,24 @@ fn make_fn() -> impl Fn() {
     let z = String::new();
     move || println!("make_fn: {}", z)
 }
+
+fn hello(f: Box<dyn Fn()>) {
+    // to get "dynamic dispatch" on Fn
+    f()
+
+    /*
+    - Previously Box<dyn Fn{Anything}> doesn't implement Fn{Anything}.
+        * Box<dyn Fn()> didn't implement Fn
+        * Box<dyn FnMut()> didn't implement FnMut
+        * Box<dyn FnOnce()> didn't implement FnOnce
+
+    Reason:
+        * I we want to do something like this:
+        impl FnOnce() for Box<dyn FnOnce()> {
+            fn call(self) {
+                let x: dyn FnOnce = self.0; /// dyn FnOnce : isn't sized OR Unsized.
+                x.call()
+            }
+        }
+    */
+}
