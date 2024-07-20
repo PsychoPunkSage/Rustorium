@@ -60,6 +60,18 @@ fn main() {
     quox(f);
     quox1(&mut f);
     quox2(&f);
+
+    // dyn
+    let z = String::new();
+    let f1 = || {
+        println!("{}", z);
+    };
+    let i: &dyn Fn() = &f1;
+    quox1_ext(i); // doesn't work with <&dyn FnMut()> => Now we have SHARED POINTER.. which isn't implemented by FnMut().
+                  // for FnMut  => &mut dyn FnMut()
+                  // for FnOnce => Box<dyn FnOnce()> || Need a wide pointer type that allows you to take ownership. i.e. let f: Box<dyn FnOnce()> = Box::new(f); => This will certainly work with weaker Fn Traits like Fn. FnMut because we have already acquired Ownership of the Fn....
+    let j: std::sync::Arc<dyn Fn()> = std::sync::Arc::new(f1);
+    quox2_ext(&j);
 }
 
 fn bar() {}
@@ -96,16 +108,31 @@ where
     println!("quox: {}", std::mem::size_of_val(&f))
 }
 
-fn quox1<T>(f: &mut T)
+fn quox1<T>(f: T)
 where
-    T: FnOnce(u32) -> u32,
+    T: FnMut(u32) -> u32,
 {
     println!("quox1: {}", std::mem::size_of_val(&f))
+}
+
+fn quox1_ext<T>(mut f: T)
+where
+    T: FnMut(),
+{
+    println!("in quox1_ext....");
+    (f)()
 }
 
 fn quox2<T>(f: &T)
 where
     T: Fn(u32) -> u32,
+{
+    println!("quox2: {}", std::mem::size_of_val(&f))
+}
+
+fn quox2_ext<T>(f: &T)
+where
+    T: Fn(),
 {
     println!("quox2: {}", std::mem::size_of_val(&f))
 }
