@@ -1,0 +1,6 @@
+[package]
+name = "ch09_atomics_memory_ordering"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
