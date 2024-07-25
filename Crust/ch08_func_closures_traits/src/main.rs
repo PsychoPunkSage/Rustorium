@@ -1,8 +1,9 @@
+#![feature(const_trait_impl)]
 fn main() {
     println!("Hello, world!");
     let x = bar; // function item
     let x1 = bar1::<i32>; // generic function item
-                          // x = bar1::<u32>(); cannot reassign a with different generic.
+                          // x1 = bar1::<u32>(); cannot reassign with a different generic.
     let x2 = bar2; // function item
 
     println!(
@@ -13,7 +14,7 @@ fn main() {
 
     /*
     Funtion Item:
-        - "Zero sized" value that is only carried around at compile time the reference a unique function.
+        - "Zero sized" value that is only carried around at compile time to reference a unique function.
         - Its just an `Identifier`.
         - it uniquely identifies a particular instance of a function.
 
@@ -47,7 +48,7 @@ fn main() {
     WHAT compiler generates from `closure`
 
     struct f_closure <'scope> {
-        _any_captures_var: &'scope <type>,
+        _any_captured_var: &'scope <type>,
     }
 
     impl<'scope> Fn() for f_closure<'scope> {
@@ -71,7 +72,10 @@ fn main() {
                   // for FnMut  => &mut dyn FnMut()
                   // for FnOnce => Box<dyn FnOnce()> || Need a wide pointer type that allows you to take ownership. i.e. let f: Box<dyn FnOnce()> = Box::new(f); => This will certainly work with weaker Fn Traits like Fn. FnMut because we have already acquired Ownership of the Fn....
     let j: std::sync::Arc<dyn Fn()> = std::sync::Arc::new(f1);
-    quox2_ext(&j);
+    // quox2_ext(&j); // Fn is not implemented for Arc<dyn Fn()>
+
+    // CONST Fn: Can be evaluated at Compile time.
+    let a = || 0;
 }
 
 fn bar() {}
@@ -108,11 +112,12 @@ where
     println!("quox: {}", std::mem::size_of_val(&f))
 }
 
-fn quox1<T>(f: T)
+fn quox1<T>(mut f: T)
 where
     T: FnMut(u32) -> u32,
 {
-    println!("quox1: {}", std::mem::size_of_val(&f))
+    println!("quox1: {}", std::mem::size_of_val(&f));
+    (f)(12);
 }
 
 fn quox1_ext<T>(mut f: T)
@@ -153,12 +158,22 @@ fn hello(f: Box<dyn Fn()>) {
         * Box<dyn FnOnce()> didn't implement FnOnce
 
     Reason:
-        * I we want to do something like this:
+        * If we want to do something like this:
         impl FnOnce() for Box<dyn FnOnce()> {
             fn call(self) {
-                let x: dyn FnOnce = self.0; /// dyn FnOnce : isn't sized OR Unsized.
+                let x: dyn FnOnce = self.0; /// dyn FnOnce : isn't sized OR it is Unsized.
                 x.call()
             }
         }
     */
+}
+
+const fn foo<F: ~const FnOnce>(f: F) {
+    /*
+    const FnOnce: F must have const impl of FnOnce.
+    ~const FnOnce: foo will be const if f is const. If F is not const then fn is not const.
+
+    all `const fn` can only call `const fn`.
+    */
+    f();
 }
