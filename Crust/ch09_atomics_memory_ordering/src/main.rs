@@ -54,6 +54,10 @@ impl<T> Mutex<T> {
     pub fn with_lock<R>(&self, f: impl FnOnce(&mut T) -> R) -> R {
         // Now we gonna lock the Mutex
         while self.locked.load(Ordering::Relaxed) != UNLOCKED {} // Waiting for the lock to be released.
+
+        // PROBLEM: May be another thread run in this brief moment.
+        std::thread::yield_now(); // replicate the problem to show that a thread may execute in between.
+
         self.locked.store(LOCKED, Ordering::Relaxed); // Lock before performing any other operation.
 
         // SAFETY: we hold the lock, therefore we can create a mutable reference.
