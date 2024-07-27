@@ -53,12 +53,20 @@ impl<T> Mutex<T> {
     }
     pub fn with_lock<R>(&self, f: impl FnOnce(&mut T) -> R) -> R {
         // Now we gonna lock the Mutex
-        while self.locked.load(Ordering::Relaxed) != UNLOCKED {} // Waiting for the lock to be released.
+        // while self.locked.load(Ordering::Relaxed) != UNLOCKED {} // Waiting for the lock to be released.
 
-        // PROBLEM: May be another thread run in this brief moment.
-        std::thread::yield_now(); // replicate the problem to show that a thread may execute in between.
+        // // PROBLEM: May be another thread run in this brief moment.
+        // std::thread::yield_now(); // replicate the problem to show that a thread may execute in between.
+        // self.locked.store(LOCKED, Ordering::Relaxed); // Lock before performing any other operation.
 
-        self.locked.store(LOCKED, Ordering::Relaxed); // Lock before performing any other operation.
+        // Soln to above issue.
+        // compare_exchange: single operation i.e. Read + Write.
+        while self
+            .locked
+            .compare_exchange(UNLOCKED, LOCKED, Ordering::Relaxed, Ordering::Relaxed)
+            .is_err()
+        // we don't want actual updates val, we just wanna know whether val was updated or not.
+        {}
 
         // SAFETY: we hold the lock, therefore we can create a mutable reference.
         let ret = f(unsafe { &mut *self.c.get() }); // we can create mutable ref as no other thread have access to this critical section.
