@@ -61,12 +61,33 @@ impl<T> Mutex<T> {
 
         // Soln to above issue.
         // compare_exchange: single operation i.e. Read + Write.
+        // BUT it is quite EXPENSIVE ops. -> cause now CPU has to coordinate exclusive references among different threads.
         while self
             .locked
             .compare_exchange(UNLOCKED, LOCKED, Ordering::Relaxed, Ordering::Relaxed)
             .is_err()
         // we don't want actual updates val, we just wanna know whether val was updated or not.
-        {}
+        {
+            // IMP>>> MESI Protocol
+            // If any thread fail to take the lock, then load data for it.... i.e. give it READ access. ::>> Popular SPIN Lock implementation.
+            while self.locked.load(Ordering::Relaxed) == LOCKED {}
+
+            /*
+            Why avoid SPIN LOCK:
+                - Busy waiting: CPU wastage
+                - Reduced Throughput: As CPU is busy and can't perform any other task
+                - Priority Inversion: HIGH priority thread may be blocked by LOW priority thread holding SPIN Lock
+                - Context Switching Overhead: When multiple threads are spinning on a lock, the operating system might frequently context switch between them, leading to overhead
+            */
+
+            /*
+            SPIN Locks V/S Mutexes:
+            - SPIN Lock:
+                => spinlocks keep the thread busy by repeatedly checking the lock's status until it becomes available.
+            - MUTEXES:
+                => When a thread fails to acquire a mutex, it's typically blocked and scheduled by the operating system, allowing other threads to run.
+            */
+        }
 
         // SAFETY: we hold the lock, therefore we can create a mutable reference.
         let ret = f(unsafe { &mut *self.c.get() }); // we can create mutable ref as no other thread have access to this critical section.
