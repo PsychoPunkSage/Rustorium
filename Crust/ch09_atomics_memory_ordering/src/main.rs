@@ -70,7 +70,10 @@ impl<T> Mutex<T> {
         {
             // IMP>>> MESI Protocol
             // If any thread fail to take the lock, then load data for it.... i.e. give it READ access. ::>> Popular SPIN Lock implementation.
-            while self.locked.load(Ordering::Relaxed) == LOCKED {}
+            while self.locked.load(Ordering::Relaxed) == LOCKED {
+                std::thread::yield_now();
+            }
+            std::thread::yield_now();
 
             /*
             Why avoid SPIN LOCK:
@@ -78,6 +81,8 @@ impl<T> Mutex<T> {
                 - Reduced Throughput: As CPU is busy and can't perform any other task
                 - Priority Inversion: HIGH priority thread may be blocked by LOW priority thread holding SPIN Lock
                 - Context Switching Overhead: When multiple threads are spinning on a lock, the operating system might frequently context switch between them, leading to overhead
+                    * compare_exchange: impl using the a ""loop"" of LDREX and STREX.
+                    * compare_exchange: LDREX and STREX.
             */
 
             /*
@@ -86,6 +91,11 @@ impl<T> Mutex<T> {
                 => spinlocks keep the thread busy by repeatedly checking the lock's status until it becomes available.
             - MUTEXES:
                 => When a thread fails to acquire a mutex, it's typically blocked and scheduled by the operating system, allowing other threads to run.
+            */
+
+            /*
+            x86: Compare and Swap Operation.(CAS)
+            ARM: LDREX/STREX - Load Exclusive(Takes exclusive of location and memory then loads val)/ Store Exclusive (ONLY if i have exclusive access to the location, ONLY then I will be able to STORE)
             */
         }
 
