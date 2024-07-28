@@ -103,11 +103,20 @@ impl<T> Mutex<T> {
         // SAFETY: we hold the lock, therefore we can create a mutable reference.
         let ret = f(unsafe { &mut *self.c.get() }); // we can create mutable ref as no other thread have access to this critical section.
         self.locked.store(UNLOCKED, Ordering::Release); // If used Release: then the next thread that will get the lock will not be able to see the changes we made in previous thread...releases
+
+        /*
+        For x86_64 machines
+            - this architecture basically guarantees that `acquire-release` semantics for all ops.
+            - its by-default; u can't opt out of it.
+        For ARM
+            - thats not true, if opted for `release` u will get release semantics.
+        */
         ret
     }
 }
 
-fn main() {
+#[test]
+fn mutex_test() {
     let l: &'static _ = Box::leak(Box::new(Mutex::new(0))); // Cause we need static ref of `Box::Leak`
     let handles: Vec<_> = (0..10)
         .map(|_| {
@@ -179,3 +188,5 @@ ORDERING:
         - usually passed in the ops that usually read or write. e.g. compare_exchange
         - do the load with Acquire semantics and Store with release semantics.
 */
+
+fn main() {}
