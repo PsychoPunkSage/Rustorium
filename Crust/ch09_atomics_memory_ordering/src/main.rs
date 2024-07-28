@@ -254,4 +254,12 @@ fn main() {
             * In Single Core <thread will run on by one> i.e. _tx -> _ty -> t1 -> t2
             * _tx will set x = true; _ty will set y = true; t1 => see both loads == true so, z+=1; t2 => both loads == true so, z+=1  ||  finally z == 2
     */
+
+    /*
+    NOTE:
+        - Acquire-Release and in general all the memory ordering; is about which concurrent things happen before which other concurrent things??
+        - if there is `NO HAPPENS BEFORE` relation between any two concurrent operations; then its kind of random whether One sees the other.
+        Q. WHY COMPILER DESIGNER ALLOW SUCH A THING?
+        A. This happens in case of Mutex and it is completely OK; cause rearrangement of code line might give CPU a major leap in performance.... and why to imply an arbitrary order link betn 2 independent var (here x,y) it there isn't any.
+    */
 }
