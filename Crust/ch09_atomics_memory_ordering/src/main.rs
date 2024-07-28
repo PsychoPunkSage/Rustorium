@@ -189,4 +189,36 @@ ORDERING:
         - do the load with Acquire semantics and Store with release semantics.
 */
 
-fn main() {}
+fn main() {
+    use std::sync::atomic::AtomicUsize;
+    let x: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
+    let y: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
+    let z: &'static _ = Box::leak(Box::new(AtomicUsize::new(0)));
+
+    let _tx = spawn(move || {
+        x.store(true, Ordering::Release);
+    });
+    let _ty = spawn(move || {
+        y.store(true, Ordering::Release);
+    });
+    let t1 = spawn(move || {
+        while !x.load(Ordering::Acquire) {}
+        if y.load(Ordering::Acquire) {
+            z.fetch_add(1, Ordering::Relaxed);
+        }
+    });
+    let t2 = spawn(move || {
+        // this y.load will sync with `_ty` so it should see all the changes(previous writes) that happened there.
+        while !y.load(Ordering::Acquire) {}
+        // BUTTT there is no requirement that it sees any particular operation that happened to X.
+        // Cause there is no "happens before" relationship between the store here and TX and the load down here.
+        if x.load(Ordering::Acquire) {
+            // this load is allowed to see any previous operation on X. Which doesn't include operations in "_ty"
+            z.fetch_add(1, Ordering::Relaxed);
+        }
+    });
+
+    t1.join().unwrap();
+    t2.join().unwrap();
+    let z = z.load(Ordering::SeqCst);
+}
