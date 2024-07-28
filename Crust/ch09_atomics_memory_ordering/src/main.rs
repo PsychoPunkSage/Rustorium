@@ -187,9 +187,13 @@ ORDERING:
     * Ordering::AcqRel
         - usually passed in the ops that usually read or write. e.g. compare_exchange
         - do the load with Acquire semantics and Store with release semantics.
+
+    * Ordering::SeqCst
+        - Like `Acquire/Release/AcqRel` (for loads, store, loads with store, respectively) with additional guarantee that all the threads see all the sequentially consistent operation in the same order.
 */
 
-fn main() {
+#[test]
+fn acq_rel() {
     use std::sync::atomic::AtomicUsize;
     let x: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
     let y: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
@@ -261,5 +265,58 @@ fn main() {
         - if there is `NO HAPPENS BEFORE` relation between any two concurrent operations; then its kind of random whether One sees the other.
         Q. WHY COMPILER DESIGNER ALLOW SUCH A THING?
         A. This happens in case of Mutex and it is completely OK; cause rearrangement of code line might give CPU a major leap in performance.... and why to imply an arbitrary order link betn 2 independent var (here x,y) it there isn't any.
+    */
+}
+
+fn main() {
+    use std::sync::atomic::AtomicUsize;
+    let x: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
+    let y: &'static _ = Box::leak(Box::new(AtomicBool::new(false)));
+    let z: &'static _ = Box::leak(Box::new(AtomicUsize::new(0)));
+
+    let _tx = spawn(move || {
+        x.store(true, Ordering::SeqCst);
+    });
+    let _ty = spawn(move || {
+        y.store(true, Ordering::SeqCst);
+    });
+    let t1 = spawn(move || {
+        while !x.load(Ordering::SeqCst) {}
+        if y.load(Ordering::SeqCst) {
+            z.fetch_add(1, Ordering::Relaxed);
+        }
+    });
+    let t2 = spawn(move || {
+        // this y.load will sync with `_ty` so it should see all the changes(previous writes) that happened there.
+        while !y.load(Ordering::SeqCst) {}
+        // BUTTT there is no requirement that it sees any particular operation that happened to X.
+        // Cause there is no "happens before" relationship between the store here and TX and the load down here.
+        if x.load(Ordering::SeqCst) {
+            // this load is allowed to see any previous operation on X. Which doesn't include operations in "_ty"
+            z.fetch_add(1, Ordering::Relaxed);
+        }
+    });
+
+    t1.join().unwrap();
+    t2.join().unwrap();
+    let z = z.load(Ordering::SeqCst);
+
+    /*
+    Q. What are the possible value of z?
+        - if 0 possible?
+            * NOT POSSIBLE
+            * CAUSE in `SeqCst` there exist some ordering that almost remain consistent across all the thread:
+                i.e. if some thread sees that X Happened then Y Happened;  then NO THREAD is allowed to see X NOT HAPPEN even though Y HAPPENED.
+
+        - if 1 possible?
+            * Yes,
+                                  |> Successfully updates (_tx, _ty already ran before;) so, z+=1
+            * _tx -> t1 -> _ty -> t2
+                     |> fails to update as y.loads == false
+
+        - if 2 possible?
+            * Yes,
+            * In Single Core <thread will run on by one> i.e. _tx -> _ty -> t1 -> t2
+            * _tx will set x = true; _ty will set y = true; t1 => see both loads == true so, z+=1; t2 => both loads == true so, z+=1  ||  finally z == 2
     */
 }
