@@ -221,4 +221,37 @@ fn main() {
     t1.join().unwrap();
     t2.join().unwrap();
     let z = z.load(Ordering::SeqCst);
+
+    /*
+    Q. What are the possible value of z?
+        - if 0 possible?
+            * Seems impossible;
+            * Restriction:
+                we know that t1 must run "after" tx
+                we know that t2 must run "after" ty
+                Given that .. tx .. t1 ..
+                           ty t2 tx t1        :> t1 will increment Z
+                           (ty) tx (ty) t1 t2 :> t1, t2 will increment Z
+                           tx t1 ty t2        :> t2 will increment Z
+
+                      t2   t1,t2
+            MO(x) : false   true
+                      t1   t1,t2
+            MO(y) : false   true
+
+            Reason: suppose `_tx and _ty` runs, now `t1` runs; it found x == true and y == false (Due to some weird reason like cache etc. even though `_ty` ran before.) -> Z wont be increased
+                                                now `t2` runs; it found y == true and x == false (due to some weird reason like cache etc. even though `_tx` ran before.) -> Z wont be increased
+
+
+        - if 1 possible?
+            * Yes,
+                                  |> Successfully updates (_tx, _ty already ran before;) so, z+=1
+            * _tx -> t1 -> _ty -> t2
+                     |> fails to update as y.loads == false
+
+        - if 2 possible?
+            * Yes,
+            * In Single Core <thread will run on by one> i.e. _tx -> _ty -> t1 -> t2
+            * _tx will set x = true; _ty will set y = true; t1 => see both loads == true so, z+=1; t2 => both loads == true so, z+=1  ||  finally z == 2
+    */
 }
