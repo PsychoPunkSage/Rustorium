@@ -26,6 +26,7 @@ MUTEX V/S ATOMIC
 */
 
 use std::cell::UnsafeCell;
+use std::os::unix::thread;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::spawn;
 
@@ -64,7 +65,7 @@ impl<T> Mutex<T> {
         // BUT it is quite EXPENSIVE ops. -> cause now CPU has to coordinate exclusive references among different threads.
         while self
             .locked
-            .compare_exchange(UNLOCKED, LOCKED, Ordering::Relaxed, Ordering::Relaxed)
+            .compare_exchange(UNLOCKED, LOCKED, Ordering::Acquire, Ordering::Relaxed)
             .is_err()
         // we don't want actual updates val, we just wanna know whether val was updated or not.
         {
@@ -101,7 +102,7 @@ impl<T> Mutex<T> {
 
         // SAFETY: we hold the lock, therefore we can create a mutable reference.
         let ret = f(unsafe { &mut *self.c.get() }); // we can create mutable ref as no other thread have access to this critical section.
-        self.locked.store(UNLOCKED, Ordering::Relaxed);
+        self.locked.store(UNLOCKED, Ordering::Release); // If used Release: then the next thread that will get the lock will not be able to see the changes we made in previous thread...releases
         ret
     }
 }
@@ -126,3 +127,55 @@ fn main() {
 
     assert_eq!(l.with_lock(|v| *v), 10 * 100)
 }
+
+#[test]
+fn too_relaxed() {
+    use std::sync::atomic::AtomicUsize;
+    let x: &'static _ = Box::leak(Box::new(AtomicUsize::new(0)));
+    let y: &'static _ = Box::leak(Box::new(AtomicUsize::new(0)));
+
+    let t1 = spawn(move || {
+        let r1 = y.load(Ordering::Relaxed);
+        x.store(r1, Ordering::Relaxed);
+        r1
+    });
+
+    let t2 = spawn(move || {
+        let r2 = x.load(Ordering::Relaxed);
+        y.store(42, Ordering::Relaxed);
+        r2
+    });
+
+    // When above threads execute we have Modification Order foreach var.
+    // MO(x): 0 -> 42
+    // MO(y): 0 -> 42
+    // Under `Ordering::Relaxed` (x) is allowed to see any value to be stored in x. ~~ TIME TRAVEL
+
+    let r1 = t1.join().unwrap();
+    let r2 = t2.join().unwrap();
+
+    // r1 == r2 == 42
+}
+
+/*
+ORDERING:
+    * Ordering::Relaxed
+        - there is no guarantees about what values thread can read from something another thread wrote.
+        - doesn't establish any order between any thread and code to be executed within the thread.
+        - i.e CPU Compiler can rejigger the lines of code to get significant performance gain....
+
+    * Ordering::Release
+        - only applicable for ops that can perform a store.
+        - all previous write becomes visible to all threads that perform an Acquire (or stronger) load of this value.
+        - all previous operation become ordered before any load of this value(data on which I'm applying ordering) with an Acquire.
+        - nothing can be reordered after a Release-Store.
+
+    * Ordering::Acquire
+        - a LOAD ops is performed with this memory order.
+        - no read or writes in the current thread can be reordered before this LOAD.
+        - all write in other threads that release the same Atomic Variable are visible in the current thread.
+
+    * Ordering::AcqRel
+        - usually passed in the ops that usually read or write. e.g. compare_exchange
+        - do the load with Acquire semantics and Store with release semantics.
+*/
