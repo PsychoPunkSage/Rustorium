@@ -16,16 +16,20 @@ Differences:
 * `Send`:
     - Its OK to pass the value to differnet thread.
     - a type is Send if it is safe to send it to another thread.
-    - i.e. giveaway the ownership of this thing to some other thread. So, that thread can do whatever it wants to do with that `value`.
+
+    ->>>> i.e. giveaway the ownership of this thing to some other thread. So, that thread can do whatever it wants to do with that `value`.
+
     - MOST types are `Send` execpt `RC` & `Mutex Guard`
-        * For `Std. Mutex` that are backed by OS implementation. They are not Send cause there are requirements on Certain OS that the `thread` that gets the LOCK should be the one that releases the LOCK.
+        * For `Std. Mutex` that are backed by OS implementation. They are not Send cause there are requirements on Certain OS that the `thread` that release the LOCK should be the one that gets the LOCK.
         * IMPORTANT: `Mutex` and `RW Lock` are SEND || But the `GUARD` is NOT SEND.
         * Ex.: Suppose you are Dropping a Val that hase to Access the thread local of the thread that created it.... Now suppose THREAD-A create the Val, now, it is sent to THREAD-B and THREAD-B tries to drop the Val. So the Val will try to access the `thread Local` of THREAD-B (instead of THREAD-A) which will violate internal Invariants.
 
 * `Sync`:
     - a type T is `sync` only if &T is Send.
     - a type is Sync if it is safe to share between threads
-    - i.e. a type whose reference is allowed to shared across the thread, it implements `sync` (Even if the type itself cannot be shared across the thread)
+
+    ->>>> i.e. a type whose reference is allowed to shared across the thread, it implements `sync` (Even if the type itself cannot be shared across the thread)
+
     - IMP: `RC` can't be `sync`; if we pass the ref to some other thread, it (that thread) can call `clone` on it, which we know is not correct as the Clone implementation requires all the access happens on one thread.
     - IMP: On the other hand, `mutex guard` is not `send` BUT it is `Sync`.
 
