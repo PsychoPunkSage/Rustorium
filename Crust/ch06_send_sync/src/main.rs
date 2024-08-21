@@ -18,6 +18,14 @@ Differences:
         * For `Std. Mutex` that are backed by OS implementation. They are not Send cause there are requirements on Certain OS that the `thread` that gets the LOCK should be the one that releases the LOCK.
         * IMPORTANT: `Mutex` and `RW Lock` are SEND || But the `GUARD` is NOT SEND.
         * Ex.: Suppose you are Dropping a Val that hase to Access the thread local of the thread that created it.... Now suppose THREAD-A create the Val, now, it is sent to THREAD-B and THREAD-B tries to drop the Val. So the Val will try to access the `thread Local` of THREAD-B (instead of THREAD-A) which will violate internal Invariants.
+
+* `Sync`:
+    - a type T is `sync` only if &T is Send.
+    - i.e. a type whose reference is allowed to shared across the thread, it implements `sync` (Even if the type itself cannot be shared across the thread)
+    - IMP: `RC` can't be `sync`; if we pass the ref to some other thread, it (that thread) will call `clone` on it, which we know is not possible as the Clone implementation requires all the access happens on one thread.
+    - IMP: On the other hand, `mutex guard` is not `send` BUT it is `Sync`.
+
+    - Type that are not Sync, are those of "interior mutability" in a non-thread-safe environment like `Cell` and `RefCell`
 */
 
 struct Rc<T> {
@@ -28,6 +36,13 @@ struct Inner<T> {
     count: usize,
     value: T,
 }
+
+// Test the functioning of Our Rc
+// fn foo<T: Send>(_: T) {}
+
+// fn bar(x: Rc<()>) {
+//     foo(x) // Not allowing...
+// }
 
 impl<T> Rc<T> {
     fn new(value: T) -> Self {
@@ -67,5 +82,19 @@ impl<T> std::ops::Deref for Rc<T> {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let x = Rc::new(1);
+    let y = x.clone();
+    std::thread::spawn(move || {
+        // Everything moving in must implemet `Send`, here, since RC is not implementing `Send` so. Not OK!!!
+        let _ = y;
+        drop(y);
+    });
+    drop(x);
 }
+
+/*
+If you want to implement -ve trait like `!Send` or `!Sync` then that can't be done on `stable compiler`
+
+SOLN:
+    - use `std::marker::PhantomData` as one of the fields of the `type` for which you want to implement -ve trait.
+*/
