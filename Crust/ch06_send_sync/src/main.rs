@@ -1,3 +1,5 @@
+mod bin;
+
 /*
 RUST have 2 traits <Send> and <Sync> which is used to Define `THREAD SAFETY` in the language.
     - Define Tread Safety at type level....
@@ -13,6 +15,7 @@ Similarities: <Send/Sync>
 Differences:
 * `Send`:
     - Its OK to pass the value to differnet thread.
+    - a type is Send if it is safe to send it to another thread.
     - i.e. giveaway the ownership of this thing to some other thread. So, that thread can do whatever it wants to do with that `value`.
     - MOST types are `Send` execpt `RC` & `Mutex Guard`
         * For `Std. Mutex` that are backed by OS implementation. They are not Send cause there are requirements on Certain OS that the `thread` that gets the LOCK should be the one that releases the LOCK.
@@ -21,15 +24,21 @@ Differences:
 
 * `Sync`:
     - a type T is `sync` only if &T is Send.
+    - a type is Sync if it is safe to share between threads
     - i.e. a type whose reference is allowed to shared across the thread, it implements `sync` (Even if the type itself cannot be shared across the thread)
-    - IMP: `RC` can't be `sync`; if we pass the ref to some other thread, it (that thread) will call `clone` on it, which we know is not possible as the Clone implementation requires all the access happens on one thread.
+    - IMP: `RC` can't be `sync`; if we pass the ref to some other thread, it (that thread) can call `clone` on it, which we know is not correct as the Clone implementation requires all the access happens on one thread.
     - IMP: On the other hand, `mutex guard` is not `send` BUT it is `Sync`.
 
     - Type that are not Sync, are those of "interior mutability" in a non-thread-safe environment like `Cell` and `RefCell`
+
+Exceptition:
+    - `raw pointers`:  neither Send nor Sync || because they have no safety guards - NO ownership NO lifetime
+    - `UnsafeCell`: isn't Sync
+    - `Rc`: isn't Send or Sync || because the refcount is shared and unsynchronized - i.e. not thread Safe
 */
 
 struct Rc<T> {
-    inner: *mut Inner<T>,
+    inner: *mut Inner<T>, // Mutable Raw pointer
 }
 
 struct Inner<T> {
@@ -98,3 +107,9 @@ If you want to implement -ve trait like `!Send` or `!Sync` then that can't be do
 SOLN:
     - use `std::marker::PhantomData` as one of the fields of the `type` for which you want to implement -ve trait.
 */
+
+// IMPLEMETING Send/Sync for type that doesn't implement it:
+struct UnsafeTypes(*mut u8);
+
+unsafe impl Send for UnsafeTypes {}
+unsafe impl Sync for UnsafeTypes {}
