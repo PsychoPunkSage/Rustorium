@@ -89,6 +89,8 @@ fn main() {
             }
         }
     }
+
+    let mut a = 12;
 }
 
 /*
