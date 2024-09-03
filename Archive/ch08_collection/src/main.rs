@@ -8,7 +8,7 @@ fn main() {
     v.push(2);
     v.push(3);
 
-    // Another representation
+    // Another representation - History change is going on
     let v2 = vec![1, 2, 3, 4];
     println!("{:?}", v2);
     println!("{}", &v2[2]);
