@@ -35,37 +35,44 @@ pub mod graph {
             }
         }
         pub mod node {
+            use std::collections::HashMap;
+
             #[derive(Clone, PartialEq, Debug)]
-            pub struct Node<'attrs> {
-                node: String,
-                attrs: Vec<(&'attrs str, &'attrs str)>,
+            pub struct Node {
+                pub node: String,
+                attrs: HashMap<String, String>,
             }
 
-            impl<'attrs> Node<'attrs> {
+            impl Node {
                 pub fn new(node: &str) -> Self {
                     Node {
                         node: node.to_string(),
-                        attrs: Vec::new(),
+                        attrs: HashMap::new(),
                     }
                 }
             }
 
-            impl<'attrs> Node<'attrs> {
-                pub fn with_attrs(mut self, attr: &'attrs [(&str, &str)]) -> Self {
-                    self.attrs.extend_from_slice(attr);
+            impl Node {
+                pub fn with_attrs(mut self, attr: &[(&str, &str)]) -> Self {
+                    self.attrs
+                        .extend(attr.iter().map(|&(a, b)| (a.to_string(), b.to_string())));
                     self
+                }
+
+                pub fn attr(&self, key: &str) -> Option<&str> {
+                    self.attrs.get(key).map(|v| v.as_str())
                 }
             }
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    pub struct Graph<'node> {
-        pub nodes: Vec<crate::graph::graph_items::node::Node<'node>>,
+    pub struct Graph {
+        pub nodes: Vec<crate::graph::graph_items::node::Node>,
         pub edges: Vec<crate::graph::graph_items::edge::Edge>,
         pub attrs: HashMap<String, String>,
     }
 
-    impl<'node> Graph<'node> {
+    impl Graph {
         pub fn new() -> Self {
             Graph {
                 nodes: Vec::new(),
@@ -75,8 +82,8 @@ pub mod graph {
         }
     }
 
-    impl<'node> Graph<'node> {
-        pub fn with_nodes(mut self, nodes: &'node [crate::graph::graph_items::node::Node]) -> Self {
+    impl Graph {
+        pub fn with_nodes(mut self, nodes: &[crate::graph::graph_items::node::Node]) -> Self {
             self.nodes.extend_from_slice(nodes);
             self
         }
@@ -97,6 +104,10 @@ pub mod graph {
                     .map(|&(key, value)| (key.to_string(), value.to_string())),
             );
             self
+        }
+
+        pub fn node(&self, key: &str) -> Option<crate::graph::graph_items::node::Node> {
+            self.nodes.iter().find(|n| n.node == key).cloned()
         }
     }
 }

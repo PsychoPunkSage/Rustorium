@@ -173,30 +173,30 @@ fn edges_store_attributes() {
     assert_eq!(graph.edges[0].attr("foo"), None);
 }
 
-// #[test]
+#[test]
 // #[ignore]
-// fn graph_nodes_store_attributes() {
-//     let attributes = [("foo", "bar"), ("bat", "baz"), ("bim", "bef")];
-//     let graph = Graph::new().with_nodes(
-//         &["a", "b", "c"]
-//             .iter()
-//             .zip(attributes.iter())
-//             .map(|(name, &attr)| Node::new(name).with_attrs(&[attr]))
-//             .collect::<Vec<_>>(),
-//     );
+fn graph_nodes_store_attributes() {
+    let attributes = [("foo", "bar"), ("bat", "baz"), ("bim", "bef")];
+    let graph = Graph::new().with_nodes(
+        &["a", "b", "c"]
+            .iter()
+            .zip(attributes.iter())
+            .map(|(name, &attr)| Node::new(name).with_attrs(&[attr]))
+            .collect::<Vec<_>>(),
+    );
 
-//     let a = graph.node("a").expect("node a must be stored");
-//     assert_eq!(a.attr("foo"), Some("bar"));
-//     assert_eq!(a.attr("bat"), None);
-//     assert_eq!(a.attr("bim"), None);
+    let a = graph.node("a").expect("node a must be stored");
+    assert_eq!(a.attr("foo"), Some("bar"));
+    assert_eq!(a.attr("bat"), None);
+    assert_eq!(a.attr("bim"), None);
 
-//     let b = graph.node("b").expect("node b must be stored");
-//     assert_eq!(b.attr("foo"), None);
-//     assert_eq!(b.attr("bat"), Some("baz"));
-//     assert_eq!(b.attr("bim"), None);
+    let b = graph.node("b").expect("node b must be stored");
+    assert_eq!(b.attr("foo"), None);
+    assert_eq!(b.attr("bat"), Some("baz"));
+    assert_eq!(b.attr("bim"), None);
 
-//     let c = graph.node("c").expect("node c must be stored");
-//     assert_eq!(c.attr("foo"), None);
-//     assert_eq!(c.attr("bat"), None);
-//     assert_eq!(c.attr("bim"), Some("bef"));
-// }
+    let c = graph.node("c").expect("node c must be stored");
+    assert_eq!(c.attr("foo"), None);
+    assert_eq!(c.attr("bat"), None);
+    assert_eq!(c.attr("bim"), Some("bef"));
+}
