@@ -28,67 +28,66 @@ fn graph_with_one_node() {
     assert_eq!(graph.nodes, vec![Node::new("a")]);
 }
 
-// #[test]
+#[test]
+fn graph_with_one_node_with_keywords() {
+    let nodes = vec![Node::new("a").with_attrs(&[("color", "green")])];
+
+    let graph = Graph::new().with_nodes(&nodes);
+
+    assert!(graph.edges.is_empty());
+
+    assert!(graph.attrs.is_empty());
+
+    assert_eq!(
+        graph.nodes,
+        vec![Node::new("a").with_attrs(&[("color", "green")])]
+    );
+}
+
+#[test]
 // #[ignore]
-// fn graph_with_one_node_with_keywords() {
-//     let nodes = vec![Node::new("a").with_attrs(&[("color", "green")])];
+fn graph_with_one_edge() {
+    let edges = vec![Edge::new("a", "b")];
 
-//     let graph = Graph::new().with_nodes(&nodes);
+    let graph = Graph::new().with_edges(&edges);
 
-//     assert!(graph.edges.is_empty());
+    assert!(graph.nodes.is_empty());
 
-//     assert!(graph.attrs.is_empty());
+    assert!(graph.attrs.is_empty());
 
-//     assert_eq!(
-//         graph.nodes,
-//         vec![Node::new("a").with_attrs(&[("color", "green")])]
-//     );
-// }
+    assert_eq!(graph.edges, vec![Edge::new("a", "b")]);
+}
 
-// #[test]
+#[test]
 // #[ignore]
-// fn graph_with_one_edge() {
-//     let edges = vec![Edge::new("a", "b")];
+fn graph_with_one_edge_with_keywords() {
+    let edges = vec![Edge::new("a", "b").with_attrs(&[("color", "blue")])];
 
-//     let graph = Graph::new().with_edges(&edges);
+    let graph = Graph::new().with_edges(&edges);
 
-//     assert!(graph.nodes.is_empty());
+    assert!(graph.nodes.is_empty());
 
-//     assert!(graph.attrs.is_empty());
+    assert!(graph.attrs.is_empty());
 
-//     assert_eq!(graph.edges, vec![Edge::new("a", "b")]);
-// }
+    assert_eq!(
+        graph.edges,
+        vec![Edge::new("a", "b").with_attrs(&[("color", "blue")])]
+    );
+}
 
-// #[test]
+#[test]
 // #[ignore]
-// fn graph_with_one_edge_with_keywords() {
-//     let edges = vec![Edge::new("a", "b").with_attrs(&[("color", "blue")])];
+fn graph_with_one_attribute() {
+    let graph = Graph::new().with_attrs(&[("foo", "1")]);
 
-//     let graph = Graph::new().with_edges(&edges);
+    let expected_attrs = HashMap::from([("foo".to_string(), "1".to_string())]);
 
-//     assert!(graph.nodes.is_empty());
+    assert!(graph.nodes.is_empty());
 
-//     assert!(graph.attrs.is_empty());
+    assert!(graph.edges.is_empty());
 
-//     assert_eq!(
-//         graph.edges,
-//         vec![Edge::new("a", "b").with_attrs(&[("color", "blue")])]
-//     );
-// }
-
-// #[test]
-// #[ignore]
-// fn graph_with_one_attribute() {
-//     let graph = Graph::new().with_attrs(&[("foo", "1")]);
-
-//     let expected_attrs = HashMap::from([("foo".to_string(), "1".to_string())]);
-
-//     assert!(graph.nodes.is_empty());
-
-//     assert!(graph.edges.is_empty());
-
-//     assert_eq!(graph.attrs, expected_attrs);
-// }
+    assert_eq!(graph.attrs, expected_attrs);
+}
 
 // #[test]
 // #[ignore]
