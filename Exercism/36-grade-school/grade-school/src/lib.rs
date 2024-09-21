@@ -4,6 +4,12 @@ pub struct School {
     data: BTreeMap<i32, Vec<String>>,
 }
 
+/*
+BETTER Approach
+
+pub struct School(BTreeMap<i32, BTreeSet(String));
+*/
+
 impl School {
     pub fn new() -> School {
         School {
