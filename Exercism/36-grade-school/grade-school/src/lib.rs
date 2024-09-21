@@ -12,12 +12,17 @@ impl School {
     }
 
     pub fn add(&mut self, grade: u32, student: &str) {
-        let students = self.data.entry(grade as i32).or_insert(Vec::new());
-
-        if !students.contains(&(student.to_string())) {
-            students.push(student.to_string());
-            self.data.entry(grade as i32).or_insert(Vec::new()).sort();
+        if self
+            .data
+            .values()
+            .any(|students| students.contains(&student.to_string()))
+        {
+            return;
         }
+
+        let students = self.data.entry(grade as i32).or_insert(Vec::new());
+        students.push(student.to_string());
+        students.sort()
     }
 
     pub fn grades(&self) -> Vec<u32> {
