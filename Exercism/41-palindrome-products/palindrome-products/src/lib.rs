@@ -20,38 +20,34 @@ impl Palindrome {
     }
 }
 
+use rayon::prelude::*;
 pub fn palindrome_products(min: u64, max: u64) -> Option<(Palindrome, Palindrome)> {
-    let palindromes = (min..=max).flat_map(|v| {
-        (v..=max).filter_map(move |i| {
-            if is_palindrome(i * v) {
-                Some(i * v)
-            } else {
-                None
-            }
+    let palindromes: Vec<u64> = (min..=max)
+        .into_par_iter() // Parallel iterator: as the entire thing is Parallel
+        .flat_map(|v| {
+            (v..=max)
+                .into_par_iter() // Parallel iterator from the rayon crate
+                .filter_map(move |i| {
+                    let product = i * v;
+                    if is_palindrome(product) {
+                        Some(product)
+                    } else {
+                        None
+                    }
+                })
         })
-    });
+        .collect();
 
-    match (palindromes.clone().min(), palindromes.max()) {
-        (Some(min_p), Some(max_p)) => Some((Palindrome(min_p), Palindrome(max_p))),
+    let min_palindrome = palindromes.iter().min().copied();
+    let max_palindrome = palindromes.iter().max().copied();
+
+    match (min_palindrome, max_palindrome) {
+        (Some(min), Some(max)) => Some((Palindrome(min), Palindrome(max))),
         _ => None,
     }
 }
 
 fn is_palindrome(v: u64) -> bool {
-    let chars = v.to_string().chars().collect::<Vec<_>>();
-    let test = (0..=chars.len() / 2)
-        .map(|i| {
-            if chars[i] == chars[chars.len() - 1 - i] {
-                true
-            } else {
-                false
-            }
-        })
-        .collect::<Vec<bool>>();
-
-    if test.iter().any(|&a| a == false) {
-        return false;
-    }
-
-    true
+    let s = v.to_string();
+    s == s.chars().rev().collect::<String>()
 }
