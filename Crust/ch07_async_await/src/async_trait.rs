@@ -37,6 +37,6 @@ fn foo<S: Service>(x: &mut dyn Service) -> FooCall<typeof S::call> {
     /*
         This will re-write everything in the code...
             - Ex: impl Future<Output = Response> ===> Pin<Box<dyn Future<Output = Response>>>
-            - Now here `Pin` is a pointer to Heap allocation of `Future`... and its size if known at compile time.
+            - Now here `Pin` is a pointer to Heap allocation of `Future`... and its size is known at compile time.
     */
 }

@@ -4,7 +4,7 @@ use tokio::{self, sync::futures};
 
 fn faulty_main() {
     let runtime = tokio::runtime::Runtime::new();
-    runtime.block_om(async {
+    runtime.block_on(async {
         // This signify that there is ONLY 1 FUTURE Possible.
         // Even though we await multiple time in this FuTURE... only CURRENT (i.e. 1) thread will be awaited... Other threads can't do anything.
         println!("Yo Server");
