@@ -44,7 +44,7 @@ pub fn lsp_pro(string_digits: &str, span: usize) -> Result<u64, Error> {
         .chars()
         .map(|c| c.to_digit(10).ok_or(Error::InvalidDigit(c)))
         .collect::<Result<Vec<_>, _>>()?
-        .windows(span)
+        .windows(span) //creates a sliding window over the vector of digits, yielding sub-slices of length span. if span = 3 and the vector is [1, 2, 3, 4, 5], it generates slices like [1, 2, 3], [2, 3, 4], and [3, 4, 5].
         .map(|slice| slice.iter().map(|d| *d as u64).product())
         .max()
         .ok_or(Error::SpanTooLong)
