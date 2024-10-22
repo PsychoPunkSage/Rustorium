@@ -42,19 +42,25 @@ pub enum RemoveCallbackError {
     NonexistentCallback,
 }
 
+pub struct ComputeCell<T> {
+    id: ComputeCellId,
+    value: T,
+    dependencies: Vec<CellId>,
+    compute_func: Option<Box<dyn Fn(&[T]) -> T>>,
+}
 pub struct Reactor<T> {
     // Just so that the compiler doesn't complain about an unused type parameter.
     // You probably want to delete this field.
     inputs: HashMap<InputCellId, T>,
-    computes: HashMap<ComputeCellId, (Option<Box<dyn Fn(&[T]) -> T>>, T)>,
+    computes: Vec<ComputeCell<T>>,
 }
 
 // You are guaranteed that Reactor will only be tested against types that are Copy + PartialEq.
-impl<T: Copy + PartialEq + Default + Debug> Reactor<T> {
+impl<T: Copy + PartialEq + Default + Debug + Sized> Reactor<T> {
     pub fn new() -> Self {
         Reactor {
             inputs: HashMap::new(),
-            computes: HashMap::new(),
+            computes: Vec::new(),
         }
     }
 
@@ -101,10 +107,12 @@ impl<T: Copy + PartialEq + Default + Debug> Reactor<T> {
         };
 
         let id = generate_id();
-        self.computes.insert(
-            ComputeCellId(id),
-            (Some(Box::new(compute_func)), compute_result),
-        );
+        self.computes.push(ComputeCell {
+            id: ComputeCellId(id),
+            value: compute_result,
+            dependencies: dependencies.to_vec(),
+            compute_func: Some(Box::new(compute_func)),
+        });
         Ok(ComputeCellId(id))
     }
 
@@ -119,8 +127,11 @@ impl<T: Copy + PartialEq + Default + Debug> Reactor<T> {
         match id {
             CellId::Input(id) => self.inputs.get(&id).cloned(),
             CellId::Compute(id) => {
-                if let Some(id) = self.computes.get(&id) {
-                    Some(id.clone().1)
+                if self.computes.iter().any(|ds| ds.id == id) {
+                    self.computes
+                        .iter()
+                        .find(|ds| ds.id == id)
+                        .map(|ds| ds.value.clone())
                 } else {
                     None
                 }
@@ -139,9 +150,23 @@ impl<T: Copy + PartialEq + Default + Debug> Reactor<T> {
     pub fn set_value(&mut self, id: InputCellId, new_value: T) -> bool {
         if let Some(input) = self.inputs.get_mut(&id) {
             *input = new_value;
-            if let Some(ref func) = &self.compute_func {
-                self.compute_data =
-                    (func)(self.inputs.values().cloned().collect::<Vec<T>>().as_ref())
+
+            for i in self.computes.iter_mut() {
+                let mut vals = Vec::new();
+
+                for cell_id in &i.dependencies {
+                    if let CellId::Input(input_id) = cell_id {
+                        if let Some(value) = self.inputs.get(input_id) {
+                            vals.push(*value);
+                        } else {
+                            continue;
+                        }
+                    }
+                }
+
+                if let Some(func) = &i.compute_func {
+                    i.value = func(&vals);
+                }
             }
             true
         } else {
