@@ -27,7 +27,7 @@ pub struct InputCellId(u32);
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ComputeCellId(u32);
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CallbackId(u32);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -47,6 +47,7 @@ pub struct ComputeCell<T> {
     value: T,
     dependencies: Vec<CellId>,
     compute_func: Option<Box<dyn Fn(&[T]) -> T>>,
+    callbacks: HashMap<CallbackId, Box<dyn FnMut(T)>>,
 }
 pub struct Reactor<T> {
     // Just so that the compiler doesn't complain about an unused type parameter.
@@ -112,6 +113,7 @@ impl<T: Copy + PartialEq + Default + Debug + Sized> Reactor<T> {
             value: compute_result,
             dependencies: dependencies.to_vec(),
             compute_func: Some(Box::new(compute_func)),
+            callbacks: HashMap::new(),
         });
         Ok(ComputeCellId(id))
     }
@@ -186,12 +188,19 @@ impl<T: Copy + PartialEq + Default + Debug + Sized> Reactor<T> {
     // * Exactly once if the compute cell's value changed as a result of the set_value call.
     //   The value passed to the callback should be the final value of the compute cell after the
     //   set_value call.
-    pub fn add_callback<F: FnMut(T)>(
+    pub fn add_callback<F: FnMut(T) + 'static>(
         &mut self,
-        _id: ComputeCellId,
-        _callback: F,
+        id: ComputeCellId,
+        callback: F,
     ) -> Option<CallbackId> {
-        todo!()
+        let c_id = CallbackId(generate_id());
+        self.computes
+            .iter_mut()
+            .filter(|cs| cs.id == id)
+            .for_each(|block| {
+                block.callbacks.insert(c_id, Box::new(callback));
+            });
+        return Some(c_id);
     }
 
     // Removes the specified callback, using an ID returned from add_callback.
