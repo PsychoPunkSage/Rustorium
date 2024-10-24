@@ -194,13 +194,14 @@ impl<T: Copy + PartialEq + Default + Debug + Sized> Reactor<T> {
         callback: F,
     ) -> Option<CallbackId> {
         let c_id = CallbackId(generate_id());
-        self.computes
-            .iter_mut()
-            .filter(|cs| cs.id == id)
-            .for_each(|block| {
-                block.callbacks.insert(c_id, Box::new(callback));
-            });
-        return Some(c_id);
+        let maybe_cell = self.computes.iter_mut().find(|cell| cell.id == id);
+
+        if let Some(cell) = maybe_cell {
+            cell.callbacks.insert(c_id, Box::new(callback));
+            Some(c_id)
+        } else {
+            None
+        }
     }
 
     // Removes the specified callback, using an ID returned from add_callback.
