@@ -1,8 +1,4 @@
-use std::fmt::Debug;
-
 pub struct CircularBuffer<T> {
-    // We fake using T here, so the compiler does not complain that
-    // "parameter `T` is never used". Delete when no longer needed.
     store: Vec<T>,
     len: usize,
     cap: usize,
@@ -14,9 +10,8 @@ pub enum Error {
     FullBuffer,
 }
 
-impl<T: Default + Clone + PartialEq + Debug> CircularBuffer<T> {
+impl<T: Default + Clone + PartialEq> CircularBuffer<T> {
     pub fn new(capacity: usize) -> Self {
-        println!("Capacity: {}", capacity);
         CircularBuffer {
             store: vec![Default::default(); capacity],
             len: 0,
@@ -41,12 +36,9 @@ impl<T: Default + Clone + PartialEq + Debug> CircularBuffer<T> {
         if self.is_empty() {
             return Err(Error::EmptyBuffer);
         }
-        println!("{:?}", self.store);
         let result = self.store.remove(0);
         self.store.push(T::default());
         self.len -= 1;
-        println!("{:?}", result);
-        println!("{:?}", self.store);
         Ok(result)
     }
 
